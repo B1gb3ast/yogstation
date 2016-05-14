@@ -15,7 +15,6 @@
 		<a href='?src=\ref[src];makeAntag=2'>Make Changelings</a><br>
 		<a href='?src=\ref[src];makeAntag=3'>Make Revs</a><br>
 		<a href='?src=\ref[src];makeAntag=4'>Make Cult</a><br>
-		<a href='?src=\ref[src];makeAntag=5'>Make Malf AI</a><br>
 		<a href='?src=\ref[src];makeAntag=11'>Make Blob</a><br>
 		<a href='?src=\ref[src];makeAntag=12'>Make Gangsters</a><br>
 		<a href='?src=\ref[src];makeAntag=16'>Make Shadowling</a><br>
@@ -31,28 +30,6 @@
 	popup.set_content(dat)
 	popup.open()
 
-
-/datum/admins/proc/makeMalfAImode()
-
-	var/list/mob/living/silicon/AIs = list()
-	var/mob/living/silicon/malfAI = null
-	var/datum/mind/themind = null
-
-	for(var/mob/living/silicon/ai/ai in player_list)
-		if(ai.client)
-			AIs += ai
-
-	if(AIs.len)
-		malfAI = pick(AIs)
-
-	if(malfAI)
-		themind = malfAI.mind
-		themind.make_AI_Malf()
-		return 1
-
-	return 0
-
-
 /datum/admins/proc/makeTraitors()
 	var/datum/game_mode/traitor/temp = new
 
@@ -66,7 +43,7 @@
 	var/mob/living/carbon/human/H = null
 
 	for(var/mob/living/carbon/human/applicant in player_list)
-		if(applicant.client.prefs.be_special & BE_TRAITOR)
+		if(applicant.client.prefs.hasSpecialRole(BE_TRAITOR))
 			if(!applicant.stat)
 				if(applicant.mind)
 					if (!applicant.mind.special_role)
@@ -103,7 +80,7 @@
 	var/mob/living/carbon/human/H = null
 
 	for(var/mob/living/carbon/human/applicant in player_list)
-		if(applicant.client.prefs.be_special & BE_CHANGELING)
+		if(applicant.client.prefs.hasSpecialRole(BE_CHANGELING))
 			if(!applicant.stat)
 				if(applicant.mind)
 					if (!applicant.mind.special_role)
@@ -138,7 +115,7 @@
 	var/mob/living/carbon/human/H = null
 
 	for(var/mob/living/carbon/human/applicant in player_list)
-		if(applicant.client.prefs.be_special & BE_REV)
+		if(applicant.client.prefs.hasSpecialRole(BE_REV))
 			if(applicant.stat == CONSCIOUS)
 				if(applicant.mind)
 					if(!applicant.mind.special_role)
@@ -211,7 +188,7 @@
 	var/mob/living/carbon/human/H = null
 
 	for(var/mob/living/carbon/human/applicant in player_list)
-		if(applicant.client.prefs.be_special & BE_CULTIST)
+		if(applicant.client.prefs.hasSpecialRole(BE_CULTIST))
 			if(applicant.stat == CONSCIOUS)
 				if(applicant.mind)
 					if(!applicant.mind.special_role)
@@ -228,7 +205,9 @@
 			H = pick(candidates)
 			H.mind.make_Cultist()
 			candidates.Remove(H)
-			temp.grant_runeword(H)
+
+		ticker.mode.pre_generate_cult_objectives()
+		ticker.mode.post_generate_cult_objectives()
 
 		return 1
 
@@ -407,7 +386,7 @@
 	var/mob/living/carbon/human/H = null
 
 	for(var/mob/living/carbon/human/applicant in player_list)
-		if(applicant.client.prefs.be_special & BE_GANG)
+		if(applicant.client.prefs.hasSpecialRole(BE_GANG))
 			if(!applicant.stat)
 				if(applicant.mind)
 					if(!applicant.mind.special_role)
@@ -661,7 +640,7 @@
 	var/list/mob/living/carbon/human/candidates = list()
 	var/mob/living/carbon/human/H = null
 	for(var/mob/living/carbon/human/applicant in player_list)
-		if(applicant.client.prefs.be_special & BE_SHADOWLING)
+		if(applicant.client.prefs.hasSpecialRole(BE_SHADOWLING))
 			if(!applicant.stat)
 				if(applicant.mind)
 					if(!applicant.mind.special_role)
@@ -691,14 +670,14 @@
 	var/list/mob/living/carbon/human/candidates = list()
 	var/mob/living/carbon/human/H = null
 	for(var/mob/living/carbon/human/applicant in player_list)
-		//if(applicant.client.prefs.be_special & BE_CYBERMAN)//the pref doesn't work because the number is too big for the & operator.
-		if(!applicant.stat)
-			if(applicant.mind)
-				if(!applicant.mind.special_role)
-					if(temp.age_check(applicant.client))
-						if(!(applicant.job in temp.restricted_jobs))
-							if(!(ticker.mode.is_cyberman(applicant.mind)))
-								candidates += applicant
+		if(applicant.client.prefs.hasSpecialRole(BE_CYBERMAN))
+			if(!applicant.stat)
+				if(applicant.mind)
+					if(!applicant.mind.special_role)
+						if(temp.age_check(applicant.client))
+							if(!(applicant.job in temp.restricted_jobs))
+								if(!(ticker.mode.is_cyberman(applicant.mind)))
+									candidates += applicant
 
 	if(candidates.len)
 		H = pick(candidates)

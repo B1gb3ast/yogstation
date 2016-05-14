@@ -142,8 +142,8 @@
 		else
 			dat += "C4 Explosive<br>"
 
-		dat += "(30 Influence) "
-		if(points >= 30)
+		dat += "(15 Influence) "
+		if(points >= 15)
 			dat += "<a href='?src=\ref[src];purchase=implant'>Implant Breaker</a><br>"
 		else
 			dat += "Implant Breaker<br>"
@@ -252,10 +252,10 @@
 					else
 						pointcost = 50
 			if("implant")
-				if(gang.points >= 30)
+				if(gang.points >= 15)
 					item_type = /obj/item/weapon/implanter/gang
 					usr << "<span class='notice'>The <b>implant breaker</b> is a single-use device that destroys all implants within the target before trying to recruit them to your gang. Also works on enemy gangsters.</span>"
-					pointcost = 30
+					pointcost = 15
 			if("gangtool")
 				if(gang.points >= 10)
 					if(usr.mind == gang.bosses[1])
@@ -313,7 +313,7 @@
 	attack_self(usr)
 
 
-/obj/item/device/gangtool/proc/ping_gang(mob/user)
+/obj/item/device/gangtool/proc/ping_gang(mob/living/user)
 	if(!user)
 		return
 	var/message = stripped_input(user,"Discreetly send a gang-wide message.","Send Message") as null|text
@@ -339,6 +339,8 @@
 			else
 				gang_rank = "[gang_rank - 1]th Lieutenant"
 		var/ping = "<span class='danger'><B><i>[gang.name] [gang_rank]</i>: [message]</B></span>"
+		log_say("[key_name(user)] : [message]")
+		user.say_log_silent += "Gang Chat: [message]"
 		for(var/datum/mind/ganger in members)
 			if(ganger.current && (ganger.current.z <= 2) && (ganger.current.stat == CONSCIOUS))
 				ganger.current << ping

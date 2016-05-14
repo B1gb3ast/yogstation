@@ -7,6 +7,8 @@
 
 
 /mob/living/simple_animal/drone/UnarmedAttack(atom/A, proximity)
+	if(isSSD(src))
+		return 0
 	A.attack_hand(src)
 
 
@@ -65,6 +67,9 @@
 
 
 	if(ishuman(user))
+		if(istype(src, /mob/living/simple_animal/drone/syndiscout)) // these drones are like bots! Can't be picked up.
+			..()
+			return
 		if(stat == DEAD)
 			..()
 			return
@@ -76,7 +81,7 @@
 			user << "<span class='warning'>[src] is buckled to the [buckled.name] and cannot be picked up!</span>"
 			return
 		user << "You start picking up the [src]."
-		if(!do_after(user, 20, target = user))
+		if(!do_after(user, 20, target = src))
 			user << "You failed picking up [src]."
 			return
 		user << "<span class='notice'>You pick [src] up.</span>"

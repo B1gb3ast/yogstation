@@ -252,3 +252,19 @@
 #define NO_RESULT				-4
 #define QUERY_OK				-5
 #define INSUFFICIENT_CREDITS	-6
+
+
+//subtypesof(), typesof() without the parent path //taken from /tg/, thanks.
+#define subtypesof(typepath) ( typesof(typepath) - typepath )
+
+//Ghost orbit types:
+#define GHOST_ORBIT_CIRCLE		"circle"
+#define GHOST_ORBIT_TRIANGLE	"triangle"
+#define GHOST_ORBIT_HEXAGON		"hexagon"
+#define GHOST_ORBIT_SQUARE		"square"
+#define GHOST_ORBIT_PENTAGON	"pentagon"
+
+//Turf wet states
+#define TURF_DRY		0
+#define TURF_WET_WATER	1
+#define TURF_WET_LUBE	2

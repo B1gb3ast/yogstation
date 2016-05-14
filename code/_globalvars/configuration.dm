@@ -14,6 +14,7 @@ var/guests_allowed = 1
 var/shuttle_frozen = 0
 var/shuttle_left = 0
 var/tinted_weldhelh = 1
+var/high_risk_item_notifications = 0
 
 
 // Debug is used exactly once (in living.dm) but is commented out in a lot of places.  It is not set anywhere and only checked.
@@ -32,24 +33,3 @@ var/MAX_EX_HEAVY_RANGE = 7
 var/MAX_EX_LIGHT_RANGE = 14
 var/MAX_EX_FLASH_RANGE = 14
 var/MAX_EX_FLAME_RANGE = 14
-
-var/list/be_special_flags = list(
-	"Zombie" = BE_ZOMBIE,
-	"Traitor" = BE_TRAITOR,
-	"Operative" = BE_OPERATIVE,
-	"Changeling" = BE_CHANGELING,
-	"Wizard" = BE_WIZARD,
-	"Malf AI" = BE_MALF,
-	"Revolutionary" = BE_REV,
-	"Alien Lifeform" = BE_ALIEN,
-	"pAI" = BE_PAI,
-	"Cultist" = BE_CULTIST,
-	"Blob" = BE_BLOB,
-	"Ninja" = BE_NINJA,
-	"Monkey" = BE_MONKEY,
-	"Gang" = BE_GANG,
-	"Abductor" = BE_ABDUCTOR,
-	"Revenant" = BE_REVENANT,
-	"Shadowling" = BE_SHADOWLING,
-	"Cyberman" = BE_CYBERMAN
-	)

@@ -546,6 +546,16 @@ to destroy them and players will be able to make replacements.
 							/obj/item/weapon/stock_parts/manipulator = 1,
 							/obj/item/weapon/stock_parts/micro_laser = 1)
 
+/obj/item/weapon/circuitboard/partlathe
+	name = "circuit board (Partlathe)"
+	build_path = /obj/machinery/autolathe/parts
+	board_type = "machine"
+	origin_tech = "engineering=2;programming=2"
+	req_components = list(
+							/obj/item/weapon/stock_parts/matter_bin = 2,
+							/obj/item/weapon/stock_parts/manipulator = 2,
+							/obj/item/weapon/stock_parts/console_screen = 1)
+
 /obj/item/weapon/circuitboard/autolathe
 	name = "circuit board (Autolathe)"
 	build_path = /obj/machinery/autolathe
@@ -748,3 +758,18 @@ obj/item/weapon/circuitboard/rdserver
 	req_components = list(
 							/obj/item/weapon/stock_parts/console_screen = 1,
 							/obj/item/weapon/stock_parts/matter_bin = 3)
+/obj/item/weapon/circuitboard/tesla_coil
+	name = "circuit board (Tesla Coil)"
+	build_path = /obj/machinery/power/tesla_coil
+	board_type = "machine"
+	origin_tech = "programming=1"
+	req_components = list(
+							/obj/item/weapon/stock_parts/capacitor = 1)
+
+/obj/item/weapon/circuitboard/grounding_rod
+	name = "circuit board (Grounding Rod)"
+	build_path = /obj/machinery/power/grounding_rod
+	board_type = "machine"
+	origin_tech = "programming=1"
+	req_components = list(
+							/obj/item/weapon/stock_parts/capacitor = 1)

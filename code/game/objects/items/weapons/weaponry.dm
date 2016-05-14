@@ -65,9 +65,6 @@
 	w_class = 3
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 
-/obj/item/weapon/claymore/IsShield()
-	return 1
-
 /obj/item/weapon/claymore/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is falling on the [src.name]! It looks like \he's trying to commit suicide.</span>")
 	return(BRUTELOSS)
@@ -91,9 +88,6 @@
 /obj/item/weapon/katana/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is slitting \his stomach open with the [src.name]! It looks like \he's trying to commit seppuku.</span>")
 	return(BRUTELOSS)
-
-/obj/item/weapon/katana/IsShield()
-		return 1
 
 /obj/item/weapon/wirerod
 	name = "wired rod"
@@ -165,9 +159,9 @@
 	icon_state = "switchblade"
 	desc = "A sharp, concealable, spring-loaded knife."
 	flags = CONDUCT
-	force = 20
+	force = 1
 	w_class = 2
-	throwforce = 15
+	throwforce = 5
 	throw_speed = 3
 	throw_range = 6
 	materials = list(MAT_METAL=12000)

@@ -1,5 +1,6 @@
 /obj
-	languages = HUMAN
+	languages_spoken = HUMAN
+	languages_understood = HUMAN
 	var/crit_fail = 0
 	var/unacidable = 0 //universal "unacidabliness" var, here so you can use it in any obj.
 	animate_movement = 2
@@ -12,6 +13,8 @@
 	var/burn_state = -1 // -1=fireproof | 0=will burn in fires | 1=currently on fire
 	var/burntime = 10 //How long it takes to burn to ashes, in seconds
 	var/burn_world_time //What world time the object will burn up completely
+
+	var/being_shocked = 0
 
 /obj/Destroy()
 	if(!istype(src, /obj/machinery))
@@ -186,3 +189,12 @@
 		burn_state = 0
 		overlays -= fire_overlay
 		SSobj.burning -= src
+
+/obj/proc/tesla_act(var/power)
+	being_shocked = 1
+	var/power_bounced = power * 0.5
+	tesla_zap(src, 3, power_bounced)
+	addtimer(src, "reset_shocked", 10)
+
+/obj/proc/reset_shocked()
+	being_shocked = 0

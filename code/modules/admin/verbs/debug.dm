@@ -472,6 +472,7 @@ var/global/list/g_fancy_list_of_types = null
 			if(istype(O, hsbitem))
 				counter++
 				qdel(O)
+			CHECK_TICK
 		log_admin("[key_name(src)] has deleted all ([counter]) instances of [hsbitem].")
 		message_admins("[key_name_admin(src)] has deleted all ([counter]) instances of [hsbitem].", 0)
 		feedback_add_details("admin_verb","DELA") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
@@ -816,7 +817,7 @@ var/global/list/g_fancy_list_of_types = null
 			M.equip_to_slot_or_del(new /obj/item/clothing/glasses/thermal/monocle(M), slot_glasses)
 			M.equip_to_slot_or_del(new /obj/item/clothing/suit/hooded/chaplain_hoodie(M), slot_wear_suit)
 			M.equip_to_slot_or_del(new /obj/item/weapon/reagent_containers/food/snacks/grown/banana(M), slot_l_store)
-			M.equip_to_slot_or_del(new /obj/item/weapon/bikehorn(M), slot_r_store)
+			M.equip_to_slot_or_del(new /obj/item/device/assembly/bikehorn(M), slot_r_store)
 
 			var/obj/item/weapon/card/id/W = new(M)
 			W.access = get_all_accesses()

@@ -3,24 +3,79 @@
 
 var/list/preferences_datums = list()
 
-var/global/list/special_roles = list( //keep synced with the defines BE_* in setup.dm
-//some autodetection here.
-	"traitor" = /datum/game_mode/traitor,			//0
-	"operative" = /datum/game_mode/nuclear,			//1
-	"changeling" = /datum/game_mode/changeling,		//2
-	"wizard" = /datum/game_mode/wizard,				//3
-	"malf AI" = /datum/game_mode/malfunction,		//4
-	"revolutionary" = /datum/game_mode/revolution,	//5
-	"alien",										//6
-	"pAI/posibrain",								//7
-	"cultist" = /datum/game_mode/cult,				//8
-	"blob" = /datum/game_mode/blob,					//9
-	"ninja",										//10
-	"monkey" = /datum/game_mode/monkey,				//11
-	"gangster" = /datum/game_mode/gang,				//12
-	"shadowling" = /datum/game_mode/shadowling,		//13
-	"abductor" = /datum/game_mode/abduction,		//14
-	"cyberman" = /datum/game_mode/cybermen
+var/global/list/spec_roles = list(
+	BE_TRAITOR = list(
+			"game_mode" = /datum/game_mode/traitor,
+			"name" 		= "traitor"
+		),
+	BE_DOUBLEAGENT = list(
+			"game_mode" = /datum/game_mode/traitor/double_agents,
+			"name" = "double agent"
+		),
+	BE_OPERATIVE = list(
+			"game_mode" = /datum/game_mode/nuclear,
+			"name" 		= "operative"
+		),
+	BE_CHANGELING = list(
+			"game_mode" = /datum/game_mode/changeling,
+			"name" 		= "changeling"
+		),
+	BE_WIZARD = list(
+			"game_mode" = /datum/game_mode/wizard,
+			"name" 		= "wizard"
+		),
+	BE_REV = list(
+			"game_mode" = /datum/game_mode/revolution,
+			"name" 		= "revolutionary"
+		),
+	BE_ALIEN = list(
+			"game_mode" = null,
+			"name" 		= "alien"
+		),
+	BE_PAI = list(
+			"game_mode" = null,
+			"name" 		= "pAI/posibrain"
+		),
+	BE_CULTIST = list(
+			"game_mode" = /datum/game_mode/cult,
+			"name" 		= "cultist"
+		),
+	BE_BLOB = list(
+			"game_mode" = /datum/game_mode/blob,
+			"name" 		= "blob"
+		),
+	BE_NINJA = list(
+			"game_mode" = null,
+			"name" 		= "ninja"
+		),
+	BE_MONKEY = list(
+			"game_mode" = /datum/game_mode/monkey,
+			"name" 		= "monkey"
+		),
+	BE_GANG = list(
+			"game_mode" = /datum/game_mode/gang,
+			"name" 		= "gangster"
+		),
+	BE_SHADOWLING = list(
+			"game_mode" = /datum/game_mode/shadowling,
+			"name" 		= "shadowling"
+		),
+	BE_ABDUCTOR = list(
+			"game_mode" = /datum/game_mode/abduction,
+			"name" 		= "abductor"
+		),
+	BE_REVENANT = list(
+			"game_mode" = null,
+			"name" 		= "revenant"
+		),
+	BE_ZOMBIE = list(
+			"game_mode" = /datum/game_mode/zombies,
+			"name" 		= "zombie"
+		),
+	BE_CYBERMAN = list(
+			"game_mode" = /datum/game_mode/cybermen,
+			"name" 		= "cyberman"
+		),
 )
 
 
@@ -39,12 +94,13 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 	//game-preferences
 	var/lastchangelog = ""				//Saved changlog filesize to detect if there was a change
 	var/ooccolor = null
-	var/be_special = 0					//Special role selection
+	var/be_special = list()					//Special role selection
 	var/UI_style_carbon = DEFAULT_CARBON_UI
 	var/UI_style_borg = DEFAULT_BORG_UI
 	var/UI_style_ai = DEFAULT_AI_UI
 	var/toggles = TOGGLES_DEFAULT
 	var/chat_toggles = TOGGLES_DEFAULT_CHAT
+	//var/ghost_orbit = GHOST_ORBIT_CIRCLE
 	var/ghost_form = "ghost"
 	var/allow_midround_antag = 1
 
@@ -75,14 +131,17 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 	var/icon/preview_icon_side = null
 
 		//Jobs, uses bitflags
+	var/job_civilian_ultra = 0
 	var/job_civilian_high = 0
 	var/job_civilian_med = 0
 	var/job_civilian_low = 0
 
+	var/job_medsci_ultra = 0
 	var/job_medsci_high = 0
 	var/job_medsci_med = 0
 	var/job_medsci_low = 0
 
+	var/job_engsec_ultra = 0
 	var/job_engsec_high = 0
 	var/job_engsec_med = 0
 	var/job_engsec_low = 0
@@ -120,7 +179,7 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 				max_save_slots = DONOR_CHARACTER_SLOTS
 	var/loaded_preferences_successfully = load_preferences()
 	//make sure they're not carrying any donator stuff from back when they were an admin.
-	if(!is_donator(src))
+	if(!is_donator(C))
 		if(UI_style_carbon in donator_carbon_uis)
 			UI_style_carbon = DEFAULT_CARBON_UI
 		if(UI_style_borg in donator_borg_uis)
@@ -129,6 +188,11 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 			UI_style_ai = DEFAULT_AI_UI
 	if(loaded_preferences_successfully)
 		if(load_character())
+			if(!is_whitelisted(C))
+				job_civilian_ultra = 0
+				job_medsci_ultra = 0
+				job_engsec_ultra = 0
+				save_character()
 			return
 	//we couldn't load character data so just randomize the character appearance + name
 	random_character()		//let's create a random character then - rather than a fat, bald and naked man.
@@ -137,6 +201,13 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 		save_preferences()
 	save_character()		//let's save this new random character so it doesn't keep generating new ones.
 	return
+
+/datum/preferences/proc/hasSpecialRole(var/id)
+	for (var/i in be_special)
+		if(id == i)
+			return 1
+
+	return 0
 
 /datum/preferences
 	proc/ShowChoices(mob/user)
@@ -388,6 +459,7 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 					if(unlock_content)
 						dat += "<b>BYOND Membership Publicity:</b> <a href='?_src_=prefs;preference=publicity'>[(toggles & MEMBER_PUBLIC) ? "Public" : "Hidden"]</a><br>"
 						dat += "<b>Ghost Form:</b> <a href='?_src_=prefs;task=input;preference=ghostform'>[ghost_form]</a><br>"
+						//dat += "<B>Ghost Orbit: </B> <a href='?_src_=prefs;task=input;preference=ghostorbit'>[ghost_orbit]</a><br>"
 
 
 				dat += "</td><td width='300px' height='300px' valign='top'>"
@@ -396,30 +468,29 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 
 				if(jobban_job_in_list(user, "Syndicate"))
 					dat += "<font color=red><b>You are banned from antagonist roles.</b></font>"
-					src.be_special = 0
+					src.be_special = list()
 
 				else
-					var/n = 0
-					for (var/i in special_roles)
-						if(jobban_job_in_list(bans, i))
-							dat += "<b>Be [i]:</b> <font color=red><b>\[BANNED]</b></font><br>"
-						else if(i == "pAI/posibrain")
+					for (var/i in spec_roles)
+						var/item = spec_roles[i]
+						if(jobban_job_in_list(bans, item["name"]))
+							dat += "<b>Be [item["name"]]:</b> <font color=red><b>\[BANNED\]</b></font><br>"
+						else if(item["name"] == "pAI/posibrain")
 							if(jobban_job_in_list(bans, "pAI"))
-								dat += "<b>Be [i]:</b> <font color=red><b>\[BANNED\]</b></font><br>"
+								dat += "<b>Be [item["name"]]:</b> <font color=red><b>\[BANNED\]</b></font><br>"
 						else
 							var/days_remaining = null
-							if(config.use_age_restriction_for_jobs && ispath(special_roles[i])) //If it's a game mode antag, check if the player meets the minimum age
-								var/mode_path = special_roles[i]
+							if(config.use_age_restriction_for_jobs && ispath(item["game_mode"])) //If it's a game mode antag, check if the player meets the minimum age
+								var/mode_path = item["game_mode"]
 								var/datum/game_mode/temp_mode = new mode_path
 								days_remaining = temp_mode.get_remaining_days(user.client)
 
 							if(days_remaining)
-								dat += "<b>Be [i]:</b> <font color=red> \[IN [days_remaining] DAYS]</font><br>"
+								dat += "<b>Be [item["name"]]:</b> <font color=red> \[IN [days_remaining] DAYS]</font><br>"
 							else if(src.toggles & QUIET_ROUND)
-								dat += "<b>Be [i]:</b> <font color=blue><b>\[QUIET ROUND\]</b></font><br>"
+								dat += "<b>Be [item["name"]]:</b> <font color=blue><b>\[QUIET ROUND\]</b></font><br>"
 							else
-								dat += "<b>Be [i]:</b> <a href='?_src_=prefs;preference=be_special;num=[n]'>[src.be_special&(1<<n) ? "Yes" : "No"]</a><br>"
-						n++
+								dat += "<b>Be [item["name"]]:</b> <a href='?_src_=prefs;preference=be_[item["name"]]'>[src.hasSpecialRole(i) ? "Yes" : "No"]</a><br>"
 				if(is_donator(user.client))
 					dat += "<b>Quiet round:</b> <a href='?_src_=prefs;preference=donor;task=quiet_round'>[(src.toggles & QUIET_ROUND) ? "Yes" : "No"]</a><br>"
 				dat += "</td></tr></table>"
@@ -465,9 +536,6 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 			if(job.spawn_positions == 0)
 				continue
 
-			if((job.whitelisted) && (!check_whitelist(user)))
-				continue
-
 			index += 1
 			if((index >= limit) || (job.title in splitJobs))
 				width += widthPerColumn
@@ -510,32 +578,48 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 
 			var/prefLevelLabel = "ERROR"
 			var/prefLevelColor = "pink"
+			var/prefLevelClass = "white"
 			var/prefUpperLevel = -1 // level to assign on left click
 			var/prefLowerLevel = -1 // level to assign on right click
 
 			if(GetJobDepartment(job, 1) & job.flag)
-				prefLevelLabel = "High"
-				prefLevelColor = "slateblue"
-				prefUpperLevel = 4
+				prefLevelLabel = "Ultra"
+				prefLevelColor = "#E5E4E2"
+				prefUpperLevel = 5
 				prefLowerLevel = 2
 			else if(GetJobDepartment(job, 2) & job.flag)
-				prefLevelLabel = "Medium"
-				prefLevelColor = "green"
-				prefUpperLevel = 1
+				prefLevelLabel = "High"
+				prefLevelColor = "slateblue"
+				if(job.whitelisted && is_whitelisted(user))
+					prefUpperLevel = 1
+				else
+					prefUpperLevel = 5
 				prefLowerLevel = 3
 			else if(GetJobDepartment(job, 3) & job.flag)
-				prefLevelLabel = "Low"
-				prefLevelColor = "orange"
+				prefLevelLabel = "Medium"
+				prefLevelColor = "green"
 				prefUpperLevel = 2
 				prefLowerLevel = 4
+			else if(GetJobDepartment(job, 4) & job.flag)
+				prefLevelLabel = "Low"
+				prefLevelColor = "orange"
+				prefUpperLevel = 3
+				prefLowerLevel = 5
 			else
 				prefLevelLabel = "NEVER"
 				prefLevelColor = "red"
-				prefUpperLevel = 3
-				prefLowerLevel = 1
+				prefUpperLevel = 4
+				if(job.whitelisted && is_whitelisted(user))
+					prefLowerLevel = 1
+				else
+					prefLowerLevel = 2
 
+			if(job.whitelisted && is_whitelisted(user))
+				prefLevelClass = "special"
+			else
+				prefLevelClass = "white"
 
-			HTML += "<a class='white' href='?_src_=prefs;preference=job;task=setJobLevel;level=[prefUpperLevel];text=[rank]' oncontextmenu='javascript:return setJobPrefRedirect([prefLowerLevel], \"[rank]\");'>"
+			HTML += "<a class='[prefLevelClass]' href='?_src_=prefs;preference=job;task=setJobLevel;level=[prefUpperLevel];text=[rank]' oncontextmenu='javascript:return setJobPrefRedirect([prefLowerLevel], \"[rank]\");'>"
 
 			if(rank == "Assistant")//Assistant is special
 				if(job_civilian_low & ASSISTANT)
@@ -570,7 +654,7 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 		if (!job)
 			return 0
 
-		if (level == 1) // to high
+		if (level == 2) // to high
 			// remove any other job(s) set to high
 			job_civilian_med |= job_civilian_high
 			job_engsec_med |= job_engsec_high
@@ -583,13 +667,16 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 			job_civilian_low &= ~job.flag
 			job_civilian_med &= ~job.flag
 			job_civilian_high &= ~job.flag
+			job_civilian_ultra &= ~job.flag
 
 			switch(level)
 				if (1)
-					job_civilian_high |= job.flag
+					job_civilian_ultra |= job.flag
 				if (2)
-					job_civilian_med |= job.flag
+					job_civilian_high |= job.flag
 				if (3)
+					job_civilian_med |= job.flag
+				if (4)
 					job_civilian_low |= job.flag
 
 			return 1
@@ -597,13 +684,16 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 			job_engsec_low &= ~job.flag
 			job_engsec_med &= ~job.flag
 			job_engsec_high &= ~job.flag
+			job_engsec_ultra &= ~job.flag
 
 			switch(level)
 				if (1)
-					job_engsec_high |= job.flag
+					job_engsec_ultra |= job.flag
 				if (2)
-					job_engsec_med |= job.flag
+					job_engsec_high |= job.flag
 				if (3)
+					job_engsec_med |= job.flag
+				if (4)
 					job_engsec_low |= job.flag
 
 			return 1
@@ -611,13 +701,16 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 			job_medsci_low &= ~job.flag
 			job_medsci_med &= ~job.flag
 			job_medsci_high &= ~job.flag
+			job_medsci_ultra &= ~job.flag
 
 			switch(level)
 				if (1)
-					job_medsci_high |= job.flag
+					job_medsci_ultra |= job.flag
 				if (2)
-					job_medsci_med |= job.flag
+					job_medsci_high |= job.flag
 				if (3)
+					job_medsci_med |= job.flag
+				if (4)
 					job_medsci_low |= job.flag
 
 			return 1
@@ -658,14 +751,17 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 		job_civilian_high = 0
 		job_civilian_med = 0
 		job_civilian_low = 0
+		job_civilian_ultra = 0
 
 		job_medsci_high = 0
 		job_medsci_med = 0
 		job_medsci_low = 0
+		job_medsci_ultra = 0
 
 		job_engsec_high = 0
 		job_engsec_med = 0
 		job_engsec_low = 0
+		job_engsec_ultra = 0
 
 
 	proc/GetJobDepartment(datum/job/job, level)
@@ -674,26 +770,32 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 			if(CIVILIAN)
 				switch(level)
 					if(1)
-						return job_civilian_high
+						return job_civilian_ultra
 					if(2)
-						return job_civilian_med
+						return job_civilian_high
 					if(3)
+						return job_civilian_med
+					if(4)
 						return job_civilian_low
 			if(MEDSCI)
 				switch(level)
 					if(1)
-						return job_medsci_high
+						return job_medsci_ultra
 					if(2)
-						return job_medsci_med
+						return job_medsci_high
 					if(3)
+						return job_medsci_med
+					if(4)
 						return job_medsci_low
 			if(ENGSEC)
 				switch(level)
 					if(1)
-						return job_engsec_high
+						return job_engsec_ultra
 					if(2)
-						return job_engsec_med
+						return job_engsec_high
 					if(3)
+						return job_engsec_med
+					if(4)
 						return job_engsec_low
 		return 0
 
@@ -807,7 +909,9 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 							/obj/item/clothing/head/sombrero, \
 							/obj/item/clothing/head/sombrero/green, \
 							/obj/item/clothing/head/cone, \
-							/obj/item/clothing/head/collectable/beret \
+							/obj/item/clothing/head/collectable/beret, \
+
+							/obj/item/clothing/shoes/fuzzy_slippers \
 						)
 
 						var/obj/item/clothing/head/item = input(usr, "What would you like to start with?","Donator fun","Nothing") as null|anything in items
@@ -879,6 +983,12 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 							var/new_form = input(user, "Thanks for supporting BYOND - Choose your ghostly form:","Thanks for supporting BYOND",null) as null|anything in ghost_forms
 							if(new_form)
 								ghost_form = new_form
+					/*if("ghostorbit")
+						if(unlock_content)
+							var/new_orbit = input(user, "Thanks for supporting BYOND - Choose your ghostly orbit:","Thanks for supporting BYOND", null) as null|anything in ghost_orbits
+							if(new_orbit)
+								ghost_orbit = new_orbit
+					*/
 					if("name")
 						var/new_name = reject_bad_name( input(user, "Choose your character's name:", "Character Preference")  as text|null )
 						if(new_name)
@@ -1110,6 +1220,14 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 
 
 			else
+				for (var/i in spec_roles)
+					var/item = spec_roles[i]
+					if(href_list["preference"] == "be_[item["name"]]")
+						if(!hasSpecialRole(i))
+							be_special[i] = item
+						else
+							be_special -= i
+
 				switch(href_list["preference"])
 					if("publicity")
 						if(unlock_content)
@@ -1138,9 +1256,6 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 							else
 								UI_style = "Midnight"
 */
-					if("be_special")
-						var/num = text2num(href_list["num"])
-						be_special ^= (1<<num)
 
 					if("name")
 						be_random_name = !be_random_name
@@ -1186,11 +1301,21 @@ var/global/list/special_roles = list( //keep synced with the defines BE_* in set
 					if("load")
 						load_preferences()
 						load_character()
+						if(!is_whitelisted(user))
+							job_civilian_ultra = 0
+							job_medsci_ultra = 0
+							job_engsec_ultra = 0
+							save_character()
 
 					if("changeslot")
 						if(!load_character(text2num(href_list["num"])))
 							random_character()
 							real_name = random_unique_name(gender)
+							save_character()
+						else if(!is_whitelisted(user))
+							job_civilian_ultra = 0
+							job_medsci_ultra = 0
+							job_engsec_ultra = 0
 							save_character()
 
 					if("tab")

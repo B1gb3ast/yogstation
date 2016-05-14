@@ -1,6 +1,7 @@
 /mob/living/carbon/human
-	languages = HUMAN
-	hud_possible = list(HEALTH_HUD,STATUS_HUD,ID_HUD,WANTED_HUD,IMPLOYAL_HUD,IMPCHEM_HUD,IMPTRACK_HUD,ANTAG_HUD)
+	languages_understood = HUMAN
+	languages_spoken = HUMAN
+	hud_possible = list(HEALTH_HUD,STATUS_HUD,ID_HUD,WANTED_HUD,IMPLOYAL_HUD,IMPCHEM_HUD,IMPTRACK_HUD,ANTAG_HUD,CYBERMEN_HACK_HUD)
 	//Hair colour and style
 	var/hair_color = "000"
 	var/hair_style = "Bald"
@@ -46,6 +47,8 @@
 
 	var/blood_max = 0 //how much are we bleeding
 	var/bleedsuppress = 0 //for stopping bloodloss, eventually this will be limb-based like bleeding
+	var/skinmended = 0 // for supppressing bleeding with burn based weapons.
+	var/heal_rate = 10 //Chance each tick for bleeding to be reduced by 0.5 per tick
 
 	var/list/organs = list() //Gets filled up in the constructor (human.dm, New() proc.
 
@@ -54,3 +57,7 @@
 	var/name_override //For temporary visible name changes
 
 	var/heart_attack = 0
+
+	var/darksight_init = 0
+
+	var/puppetingSSD = 0

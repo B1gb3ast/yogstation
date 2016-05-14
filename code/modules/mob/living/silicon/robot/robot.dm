@@ -149,16 +149,16 @@
 /mob/living/silicon/robot/proc/pick_module()
 	if(module)
 		return
-	designation = input("Please, select a module!", "Robot", null, null) in list("Standard", "Engineering", "Medical", "Miner", "Janitor","Service", "Security")
+	designation = input("Please, select a module!", "Robot", null, null) in list("Standard", "Engineering", "Medical", "Miner", "Janitor","Service", "Security", "Clown")
 	var/animation_length=0
 	if(module)
 		return
 	updatename()
 	switch(designation)
 		if("Standard")
+			module = new /obj/item/weapon/robot_module/standard(src)
 			var/icontype = input("Select an icon!", "Robot", "Standard") in list("Standard")
 			if(!icontype) return
-			module = new /obj/item/weapon/robot_module/standard(src)
 			hands.icon_state = "standard"
 			switch(icontype)
 				if("Standard")
@@ -169,9 +169,9 @@
 			feedback_inc("cyborg_standard",1)
 
 		if("Service")
+			module = new /obj/item/weapon/robot_module/butler(src)
 			var/icontype = input("Select an icon!", "Robot", "Butler") in list("Waitress", "Bro", "Butler", /*"Kent",*/ "Rich")
 			if(!icontype) return
-			module = new /obj/item/weapon/robot_module/butler(src)
 			hands.icon_state = "service"
 			switch(icontype)
 				if("Waitress")
@@ -192,9 +192,9 @@
 			feedback_inc("cyborg_service",1)
 
 		if("Miner")
+			module = new /obj/item/weapon/robot_module/miner(src)
 			var/icontype = input("Select an icon!", "Robot", "Tread Miner") in list("Tread Miner")
 			if(!icontype) return
-			module = new /obj/item/weapon/robot_module/miner(src)
 			hands.icon_state = "miner"
 			switch(icontype)
 				if("Tread Miner")
@@ -207,25 +207,30 @@
 			feedback_inc("cyborg_miner",1)
 
 		if("Medical")
-			var/icontype = input("Select an icon!", "Robot", "Mediborg") in list("Mediborg")
-			if(!icontype) return
 			module = new /obj/item/weapon/robot_module/medical(src)
+			var/icontype = input("Select an icon!", "Robot", "Mediborg") in list("Mediborg" , "Medihover", "Smile Screen")
+			if(!icontype) return
 			hands.icon_state = "medical"
 			switch(icontype)
 				if("Mediborg")
 					icon_state = "mediborg"
-					animation_length=35
+					animation_length = 34
+				if("Medihover")
+					icon_state = "medihover"
+					animation_length = 8
+				if("Smile Screen")
+					icon_state = "mediborg+smile"
+					animation_length = 28
 				else
 					icon_state = "mediborg"
-					animation_length = 35
-			modtype = "Med"
+					animation_length = 34
 			status_flags &= ~CANPUSH
 			feedback_inc("cyborg_medical",1)
 
 		if("Security")
+			module = new /obj/item/weapon/robot_module/security(src)
 			var/icontype = input("Select an icon!", "Robot", "Secborg") in list("Secborg", "Treaded Secborg", "Interceptor")
 			if(!icontype) return
-			module = new /obj/item/weapon/robot_module/security(src)
 			hands.icon_state = "security"
 			switch(icontype)
 				if("Secborg")
@@ -245,9 +250,9 @@
 			feedback_inc("cyborg_security",1)
 
 		if("Engineering")
+			module = new /obj/item/weapon/robot_module/engineering(src)
 			var/icontype = input("Select an icon!", "Robot", "Engiborg") in list("Engiborg", "Treaded Engiborg", "Hover Engiborg")
 			if(!icontype) return
-			module = new /obj/item/weapon/robot_module/engineering(src)
 			hands.icon_state = "engineer"
 			switch(icontype)
 				if("Engiborg")
@@ -269,9 +274,9 @@
 			feedback_inc("cyborg_engineering",1)
 
 		if("Janitor")
+			module = new /obj/item/weapon/robot_module/janitor(src)
 			var/icontype = input("Select an icon!", "Robot", "Janiborg") in list("Janiborg", "Disposal")
 			if(!icontype) return
-			module = new /obj/item/weapon/robot_module/janitor(src)
 			hands.icon_state = "janitor"
 			switch(icontype)
 				if("Janiborg")
@@ -285,6 +290,34 @@
 					animation_length = 22
 			modtype = "Jan"
 			feedback_inc("cyborg_janitor",1)
+
+		if("Clown")
+			module = new /obj/item/weapon/robot_module/clown(src)
+			var/icontype = input("Select an icon!", "Robot", "Clown") in list("Clown", "Wizard Bot", "Wizard Borg","Chicken")
+			if(!icontype) return
+			hands.icon_state = "standard"
+			switch(icontype)
+				if("Clown")
+					icon_state = "ClownBot"
+					animation_length= 8
+					modtype = "Clown"
+				if("Wizard Bot")
+					icon_state = "WizardBot"
+					animation_length = 1
+					modtype = "Wizard"
+				if("Wizard Borg")
+					icon_state = "WizardBorg"
+					animation_length = 1
+					modtype = "Wizard"
+				if("Chicken")
+					icon_state = "ChickenBot"
+					animation_length = 1
+					modtype = "Chicken"
+				else
+					icon_state = "ClownBot"
+					animation_length = 8
+			modtype = "Clown"
+			feedback_inc("cyborg_clown",1)
 
 	transform_animation(animation_length)
 	notify_ai(2)
@@ -370,15 +403,6 @@
 	..()
 	if(statpanel("Status"))
 		stat("[worldtime2text()] [time2text(world.realtime, "MMM DD")] [year_integer+540]")
-		if(ticker.mode.name == "AI malfunction")
-			var/datum/game_mode/malfunction/malf = ticker.mode
-			for (var/datum/mind/malfai in malf.malf_ai)
-				if(connected_ai)
-					if((connected_ai.mind == malfai) && (malf.apcs > 0))
-						stat(null, "Time until station control secured: [max(malf.AI_win_timeleft/malf.apcs, 0)] seconds")
-				else if(malf.malf_mode_declared && (malf.apcs > 0))
-					stat(null, "Time left: [max(malf.AI_win_timeleft/malf.apcs, 0)]")
-
 		if(cell)
 			stat(null, text("Charge Left: [cell.charge]/[cell.maxcharge]"))
 		else
@@ -798,6 +822,8 @@
 				state_name = "standard"
 			if("mediborg")
 				overlays += "eyes-mediborg"
+			if("medihover")
+				overlays += "eyes-medihover"
 			if("toiletbot")
 				overlays += "eyes-mediborg"
 				state_name = "mediborg"
@@ -821,6 +847,8 @@
 				overlays += "eyes-disposalbot"
 			if("minerborg")
 				overlays += "eyes-minerborg"
+			if("mediborg+smile")
+				overlays += "eyes-mediborg"
 			if("syndie_bloodhound")
 				overlays += "eyes-syndie_bloodhound"
 			else
@@ -840,6 +868,10 @@
 	if(jetpackoverlay)
 		overlays += "minerjetpack"
 	update_fire()
+	if(stat == DEAD && icon_state == "mediborg+smile")
+		overlays += "dead-[icon_state]"
+	else if (stat != DEAD && icon_state == "mediborg+smile")
+		overlays -= "dead-[icon_state]"
 
 /mob/living/silicon/robot/proc/installed_modules()
 	if(!module)

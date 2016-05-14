@@ -9,6 +9,7 @@
 	hitsound = 'sound/weapons/pierce.ogg'
 	var/def_zone = ""	//Aiming at
 	var/mob/firer = null//Who shot it
+	var/obj/item/ammo_casing/ammo_casing = null	//The ammo_casing that fired this bullet
 	var/suppressed = 0	//Attack message
 	var/yo = null
 	var/xo = null
@@ -38,6 +39,7 @@
 	var/stamina = 0
 	var/jitter = 0
 	var/forcedodge = 0
+	var/temperature = 0
 	// 1 to pass solid objects, 2 to pass solid turfs (results in bugs, bugs and tons of bugs)
 	var/range = 0
 

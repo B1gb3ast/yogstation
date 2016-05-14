@@ -38,7 +38,7 @@ var/list/blob_overmind_list = list()         //blob overmind list so we can keep
 	for(var/j = 0, j < cores_to_spawn, j++)
 		if (!antag_candidates.len)
 			break
-		var/datum/mind/blob = pick(antag_candidates)
+		var/datum/mind/blob = pick_candidate()
 		infected_crew += blob
 		blob.special_role = "Blob"
 		blob.restricted_roles = restricted_jobs
@@ -54,7 +54,7 @@ var/list/blob_overmind_list = list()         //blob overmind list so we can keep
 /datum/game_mode/blob/proc/get_blob_candidates()
 	var/list/candidates = list()
 	for(var/mob/living/carbon/human/player in player_list)
-		if(!player.stat && player.mind && !player.mind.special_role && !jobban_check_mob(player, "Syndicate") && (player.client.prefs.be_special & BE_BLOB))
+		if(!player.stat && player.mind && !player.mind.special_role && !jobban_check_mob(player, "Syndicate") && (player.client.prefs.hasSpecialRole(BE_BLOB)))
 			if(age_check(player.client))
 				candidates += player
 	return candidates

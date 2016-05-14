@@ -6,6 +6,7 @@
 	var/completed = 0					//currently only used for custom objectives.
 	var/dangerrating = 0				//How hard the objective is, essentially. Used for dishing out objectives and checking overall victory.
 	var/martyr_compatible = 0			//If the objective is compatible with martyr objective, i.e. if you can still do it while dead.
+	var/list/restricted_special_roles = list()  //Special roles that the objective cannot refer to.
 
 /datum/objective/New(var/text)
 	if(text)
@@ -28,6 +29,11 @@
 	for(var/datum/mind/possible_target in ticker.minds)
 		if(possible_target != owner && ishuman(possible_target.current) && (possible_target.current.stat != 2) && is_unique_objective(possible_target))
 			possible_targets += possible_target
+	if(restricted_special_roles.len && possible_targets.len)
+		for(var/R in restricted_special_roles)
+			for(var/datum/mind/T in possible_targets)
+				if(T.special_role == R)
+					possible_targets -= T
 	if(possible_targets.len > 0)
 		target = pick(possible_targets)
 	update_explanation_text()
@@ -60,10 +66,14 @@
 
 /datum/objective/proc/give_special_equipment()
 
+/datum/objective/proc/locate_targets()//returns a list of all targets, or null if targets cannot, or should not, be located (i.e., hijack has no specific targets).
+	return null
+
 /datum/objective/assassinate
 	var/target_role_type=0
 	dangerrating = 10
 	martyr_compatible = 1
+	restricted_special_roles = list("abductor agent","abductor scientist")
 
 /datum/objective/assassinate/find_target_by_role(role, role_type=0, invert=0)
 	if(!invert)
@@ -78,6 +88,12 @@
 		return 0
 	return 1
 
+/datum/objective/assassinate/locate_targets()
+	if(target.current)
+		return list(target.current)
+	else
+		return list()
+
 /datum/objective/assassinate/update_explanation_text()
 	..()
 	if(target && target.current)
@@ -89,6 +105,7 @@
 /datum/objective/mutiny
 	var/target_role_type=0
 	martyr_compatible = 1
+	restricted_special_roles = list("abductor agent","abductor scientist")
 
 /datum/objective/mutiny/find_target_by_role(role, role_type=0,invert=0)
 	if(!invert)
@@ -106,6 +123,12 @@
 		return 0
 	return 1
 
+/datum/objective/mutiny/locate_targets()
+	if(target.current)
+		return list(target.current)
+	else
+		return list()
+
 /datum/objective/mutiny/update_explanation_text()
 	..()
 	if(target && target.current)
@@ -119,6 +142,7 @@
 	var/target_role_type=0
 	dangerrating = 5
 	martyr_compatible = 1
+	restricted_special_roles = list("abductor agent","abductor scientist")
 
 /datum/objective/maroon/find_target_by_role(role, role_type=0, invert=0)
 	if(!invert)
@@ -134,6 +158,12 @@
 			return 0
 	return 1
 
+/datum/objective/maroon/locate_targets()
+	if(target.current)
+		return list(target.current)
+	else
+		return list()
+
 /datum/objective/maroon/update_explanation_text()
 	if(target && target.current)
 		explanation_text = "Prevent [target.name], the [!target_role_type ? target.assigned_role : target.special_role], from escaping alive."
@@ -145,6 +175,7 @@
 /datum/objective/debrain//I want braaaainssss
 	var/target_role_type=0
 	dangerrating = 20
+	restricted_special_roles = list("abductor agent","abductor scientist")
 
 /datum/objective/debrain/find_target_by_role(role, role_type=0, invert=0)
 	if(!invert)
@@ -166,6 +197,12 @@
 			return 1
 	return 0
 
+/datum/objective/debrain/locate_targets()
+	if(target.current)
+		return list(target.current)
+	else
+		return list()
+
 /datum/objective/debrain/update_explanation_text()
 	..()
 	if(target && target.current)
@@ -179,6 +216,7 @@
 	var/target_role_type=0
 	dangerrating = 10
 	martyr_compatible = 1
+	restricted_special_roles = list("abductor agent","abductor scientist")
 
 /datum/objective/protect/find_target_by_role(role, role_type=0, invert=0)
 	if(!invert)
@@ -194,6 +232,13 @@
 			return 0
 		return 1
 	return 0
+
+
+/datum/objective/protect/locate_targets()
+	if(target.current)
+		return list(target.current)
+	else
+		return list()
 
 /datum/objective/protect/update_explanation_text()
 	..()
@@ -303,6 +348,8 @@
 		return 0
 	if(ticker.force_ending) //This one isn't their fault, so lets just assume good faith
 		return 1
+	if(ticker.mode.station_was_nuked) //If they escaped the blast somehow, let them win
+		return 1
 	if(SSshuttle.emergency.mode < SHUTTLE_ENDGAME)
 		return 0
 	var/turf/location = get_turf(owner.current)
@@ -321,6 +368,7 @@
 	dangerrating = 10
 	var/target_real_name // Has to be stored because the target's real_name can change over the course of the round
 	var/target_missing_id
+	restricted_special_roles = list("abductor agent","abductor scientist")
 
 /datum/objective/escape/escape_with_identity/find_target()
 	target = ..()
@@ -393,6 +441,14 @@ var/global/list/possible_items = list()
 
 /datum/objective/steal/get_target()
 	return steal_target
+
+/datum/objective/steal/locate_targets()
+	var/result = list()
+	for(var/item in antag_objective_items)
+		//world << "item: [item], == null: [item == null] istype: [istype(item, steal_target)]"
+		if(item && istype(item, steal_target))
+			result += item
+	return result
 
 /datum/objective/steal/New()
 	..()
@@ -635,6 +691,12 @@ var/global/list/possible_items_special = list()
 		return 0
 	return 1
 
+/datum/objective/destroy/locate_targets()
+	if(target.current)
+		return list(target.current)
+	else
+		return list()
+
 /datum/objective/destroy/update_explanation_text()
 	..()
 	if(target && target.current)
@@ -819,7 +881,13 @@ var/global/list/possible_items_special = list()
 		return 1
 	return 0
 
-
+/datum/objective/changeling_team_objective/impersonate_department/locate_targets()
+	var/L = list()
+	for(var/V in department_minds)
+		var/datum/mind/M = V
+		if(M.current)
+			L += M.current
+	return L
 
 
 //A subtype of impersonate_derpartment

@@ -351,7 +351,7 @@ var/list/sting_paths
 		user << "<span class='danger'>You lack the power to readapt your evolutions!</span>"
 		return 0
 
-/mob/proc/make_changeling()
+/mob/proc/make_changeling(var/createhuman = 0)
 	if(!mind)
 		return
 	if(!ishuman(src) && !ismonkey(src))
@@ -378,6 +378,8 @@ var/list/sting_paths
 	mind.changeling.purchasedpowers += revive_abilities
 
 	var/mob/living/carbon/C = src		//only carbons have dna now, so we have to typecaste
+	if(createhuman)
+		C = new /mob/living/carbon/human()
 	var/datum/changelingprofile/prof = mind.changeling.add_profile(C) //not really a point in typecasting here but somebody will probably get mad at me if i dont
 	mind.changeling.first_prof = prof
 	return 1
@@ -401,9 +403,10 @@ var/list/sting_paths
 			for(var/obj/effect/proc_holder/changeling/p in mind.changeling.purchasedpowers)
 				if(!((p.dna_cost == 0 && keep_free_powers) || (istype(p, /obj/effect/proc_holder/changeling/revive) && keep_revive_powers)) )
 					mind.changeling.purchasedpowers -= p
-				if(istype(p,/obj/effect/proc_holder/changeling/augmented_eyesight))
-					permanent_sight_flags -= SEE_MOBS
-					sight -= SEE_MOBS
+				var/obj/effect/proc_holder/changeling/augmented_eyesight/eyesight_power = p
+				if(istype(eyesight_power))
+					if(eyesight_power.active)
+						eyesight_power.sting_action(src)
 		if(hud_used)
 			hud_used.lingstingdisplay.icon_state = null
 			hud_used.lingstingdisplay.invisibility = 101

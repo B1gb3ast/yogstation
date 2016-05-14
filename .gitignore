@@ -27,3 +27,8 @@
 *.lk
 *.int
 *.backup
+
+#Ignore compiled python
+**/__pycache__
+**/*.pyc
+*.pyc

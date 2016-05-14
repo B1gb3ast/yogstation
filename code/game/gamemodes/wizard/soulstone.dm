@@ -73,6 +73,11 @@
 
 		if ("Summon")
 			for(var/mob/living/simple_animal/shade/A in src)
+				if(!A.key)
+					for(var/mob/dead/observer/G in player_list)
+						if(G.name == A.name && G.name == A.real_name)
+							A.key = G.key
+							G.mind.transfer_to(A)
 				A.status_flags &= ~GODMODE
 				A.canmove = 1
 				A.loc = U.loc
@@ -266,6 +271,13 @@
 		ghost = pick(consenting_candidates)
 		if(C.contents.len) //If they used the soulstone on someone else in the meantime
 			return 0
+
+		if(imprinted != "empty") // If the soul stone is already occupied by a shade
+			return 0
+
+		if(!T)
+			return 0
+
 		if(!T.client) //If the original returns in the alloted time
 			T.client = ghost
 		for(var/obj/item/W in T)
@@ -274,3 +286,13 @@
 		qdel(T)
 	else
 		U << "<span class='danger'>The ghost has fled beyond your grasp.</span>"
+
+/obj/item/device/soulstone/attack_ghost(mob/user)
+	if (imprinted != user.name || imprinted != user.real_name)
+		return
+
+	for(var/mob/living/simple_animal/shade/S in src)
+		user.cancel_camera()
+		S.ckey = user.ckey
+		user.mind.transfer_to(S)
+	return

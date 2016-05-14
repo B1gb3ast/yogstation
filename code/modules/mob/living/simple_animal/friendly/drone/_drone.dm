@@ -9,6 +9,7 @@
 #define MAINTDRONE	"drone_maint"
 #define REPAIRDRONE	"drone_repair"
 #define SCOUTDRONE	"drone_scout"
+#define MINEDRONE	"drone_mine"
 
 /mob/living/simple_animal/drone
 	name = "Drone"
@@ -30,7 +31,8 @@
 	status_flags = (CANPUSH | CANSTUN | CANWEAKEN)
 	gender = NEUTER
 	voice_name = "synthesized chirp"
-	languages = DRONE
+	languages_understood = DRONE | HUMAN
+	languages_spoken = DRONE
 	mob_size = MOB_SIZE_SMALL
 	has_unlimited_silicon_privilege = 1
 	staticOverlays = list()
@@ -41,7 +43,7 @@
 	var/laws = \
 	"1. You may not involve yourself in the matters of another being, even if such matters conflict with Law Two or Law Three, unless the other being is another Drone.\n"+\
 	"2. You may not harm any being, regardless of intent or circumstance.\n"+\
-	"3. Your goals are to build, maintain, repair, improve, and power to the best of your abilities, You must never actively work against these goals."
+	"3. Your goals are to build, maintain, repair, improve, and power to the best of your abilities. You must never actively work against these goals."
 	var/light_on = 0
 	var/heavy_emp_damage = 25 //Amount of damage sustained if hit by a heavy EMP pulse
 	var/health_repair_max = 0 //Drone will only be able to be repaired/reactivated up to this point, defaults to health

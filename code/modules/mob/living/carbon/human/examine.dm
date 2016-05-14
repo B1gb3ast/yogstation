@@ -304,17 +304,24 @@
 		msg += "[t_He] [t_has] pale skin.\n"
 
 	if(bleedsuppress)
-		msg += "[t_He] [t_is] bandaged with something.\n"
+		if(skinmended == 0) // so skinmended = 1 will add in nothing.
+			msg += "[t_He] [t_is] bandaged with something.\n"
 	else if(blood_max)
-		switch (blood_max)
-			if (0.05 to 1)
-				msg += "[t_He] [t_is] bleeding very slightly.\n"
-			if (1.5 to 3)
-				msg += "<B>[t_He] [t_is] bleeding significantly!</B>\n"
-			if (4 to 6)
-				msg += "<B>[t_He] [t_is] bleeding severely!</B>\n"
-			if (6 to INFINITY)
-				msg += "<B>[t_He] [t_is] bleeding out quickly!</B>\n"
+		if(reagents.has_reagent("heparin"))
+			msg += "<b>[t_He] [t_is] bleeding uncontrollably!</b>\n"
+		else
+			switch (blood_max)
+				if (0.05 to 1)
+					msg += "[t_He] [t_is] bleeding very slightly.\n"
+				if (1.5 to 3)
+					msg += "<B>[t_He] [t_is] bleeding significantly!</B>\n"
+				if (4 to 6)
+					msg += "<B>[t_He] [t_is] bleeding severely!</B>\n"
+				if (6 to INFINITY)
+					msg += "<B>[t_He] [t_is] bleeding out quickly!</B>\n"
+
+	if(reagents.has_reagent("teslium"))
+		msg += "[t_He] is emitting a gentle blue glow!\n"
 
 	msg += "</span>"
 
@@ -327,6 +334,8 @@
 		if(getorgan(/obj/item/organ/internal/brain))
 			if(istype(src,/mob/living/carbon/human/interactive))
 				msg += "<span class='deadsay'>[t_He] [t_is] appears to be some sort of sick automaton, [t_his] eyes are glazed over and [t_his] mouth is slightly agape.</span>\n"
+			else if (!key && puppetingSSD)
+				msg += "[t_He] appears to be completely devoted to the remote-looking object in [t_his] hands. \n"
 			else if(!key)
 				msg += "<span class='deadsay'>[t_He] [t_is] totally catatonic. The stresses of life in deep-space must have been too much for [t_him]. Any recovery is unlikely.</span>\n"
 			else if(!client)

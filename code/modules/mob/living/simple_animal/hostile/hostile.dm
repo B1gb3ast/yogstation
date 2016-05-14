@@ -56,8 +56,10 @@
 				AIStatus = AI_IDLE				// otherwise we go idle
 	return 1
 
-
-
+/mob/living/simple_animal/hostile/UnarmedAttack(atom/A, proximity_flag)
+	..()
+	target = A
+	AttackingTarget()
 
 //////////////HOSTILE MOB TARGETTING AND AGGRESSION////////////
 
@@ -219,7 +221,10 @@
 	..(gibbed)
 
 /mob/living/simple_animal/hostile/proc/OpenFire(the_target)
-
+	var/obj/item/weapon/storage/tactical_harness/ranged/ranged_harness = harness
+	if(istype(ranged_harness) && !ranged_harness.weapon_safety && ranged_harness.selected_weapon)
+		if(!ranged_harness.can_shoot())
+			return
 	var/target = the_target
 	visible_message("<span class='danger'><b>[src]</b> [ranged_message] at [target]!</span>")
 
@@ -245,6 +250,12 @@
 	return
 
 /mob/living/simple_animal/hostile/proc/Shoot(target, start, user, bullet = 0)
+	var/obj/item/weapon/storage/tactical_harness/ranged/ranged_harness = harness
+	if(ranged_harness && !ranged_harness.weapon_safety && ranged_harness.selected_weapon)
+		if(!ranged_harness.can_shoot())
+			return
+		else
+			ranged_harness.handle_shoot()
 	if(target == start)
 		return
 

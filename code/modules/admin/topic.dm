@@ -57,13 +57,6 @@
 				else
 					message_admins("[key_name_admin(usr)] tried to start a cult. Unfortunately, there were no candidates available.")
 					log_admin("[key_name(usr)] failed to start a cult.")
-			if("5")
-				if(src.makeMalfAImode())
-					message_admins("[key_name(usr)] caused an AI to malfunction.")
-					log_admin("[key_name(usr)] caused an AI to malfunction.")
-				else
-					message_admins("[key_name_admin(usr)] tried to cause an AI to malfunction. Unfortunately, there were no candidates available.")
-					log_admin("[key_name(usr)] failed to cause an AI to malfunction.")
 			if("6")
 				message_admins("[key_name(usr)] is creating a wizard...")
 				if(src.makeWizard())
@@ -803,6 +796,12 @@
 		else
 			jobs += "<td width='20%'><a href='?src=\ref[src];jobban3=abductor;jobban4=\ref[M]'>[replacetext("Abductor", " ", "&nbsp")]</a></td>"
 
+		//Borer
+		if(jobban_job_in_list(bans, "borer") || isbanned_dept)
+			jobs += "<td width='20%'><a href='?src=\ref[src];jobban3=borer;jobban4=\ref[M]'><font color=red>[replacetext("Borer", " ", "&nbsp")]</font></a></td>"
+		else
+			jobs += "<td width='20%'><a href='?src=\ref[src];jobban3=borer;jobban4=\ref[M]'>[replacetext("Borer", " ", "&nbsp")]</a></td>"
+
 /*		//Malfunctioning AI	//Removed Malf-bans because they're a pain to impliment
 		if(jobban_job_in_list(bans, "malf AI") || isbanned_dept)
 			jobs += "<td width='20%'><a href='?src=\ref[src];jobban3=malf AI;jobban4=\ref[M]'><font color=red>[replacetext("Malf AI", " ", "&nbsp")]</font></a></td>"
@@ -1009,6 +1008,29 @@
 
 	else if(href_list["addnoteempty"])
 		add_note()
+
+	else if(href_list["noteexport"])
+		var/target_ckey = href_list["noteexport"]
+		var/output = ""
+
+		var/target_sql_ckey = sanitizeSQL(target_ckey)
+		var/DBQuery/query_get_notes = dbcon.NewQuery("SELECT id, timestamp, notetext, adminckey, last_editor, server FROM [format_table_name("notes")] WHERE ckey = '[target_sql_ckey]' ORDER BY timestamp")
+		if(!query_get_notes.Execute())
+			var/err = query_get_notes.ErrorMsg()
+			log_game("SQL ERROR obtaining ckey, notetext, adminckey, last_editor, server from notes table. Error : \[[err]\]\n")
+			return
+
+		while(query_get_notes.NextRow())
+			//var/id = query_get_notes.item[1]
+			var/timestamp = query_get_notes.item[2]
+			var/notetext = query_get_notes.item[3]
+			//var/adminckey = query_get_notes.item[4]
+			//var/last_editor = query_get_notes.item[5]
+			var/server = query_get_notes.item[6]
+			output += "<p style='margin-bottom: 0px;'><b>[timestamp] | [server]</b><br />"
+			output += "<span style='margin-left: 16px; margin-top: 0px;'>[notetext]</span></p>"
+
+		usr << browse(output, "window=noteexport;size=800x650")
 
 	else if(href_list["removenote"])
 		var/note_id = href_list["removenote"]
@@ -1481,6 +1503,18 @@
 		message_admins("<span class='danger'>Admin [key_name_admin(usr)] healed / revived [key_name_admin(L)]!</span>")
 		log_admin("[key_name(usr)] healed / Revived [key_name(L)]")
 
+	else if(href_list["makeborer"])
+		if(!check_rights(R_SPAWN))  return
+
+		var/mob/living/carbon/human/H = locate(href_list["makeborer"])
+		if(!istype(H))
+			usr << "This can only be used on instances of /mob/living/carbon/human"
+			return
+
+		message_admins("<span class='danger'>Admin [key_name_admin(usr)] turned [key_name_admin(H)] into a borer!</span>")
+		log_admin("[key_name(usr)] borerized [key_name(H)].")
+		H.Borerize()
+
 	else if(href_list["makeai"])
 		if(!check_rights(R_SPAWN))	return
 
@@ -1826,6 +1860,26 @@
 		var/mob/M = locate(href_list["antag_token_decrease"])
 		var/tokens = antag_token_use(M)
 		var/msg = "ANTAGTOKENS [get_ckey(usr)] decreased the antag token count for [get_ckey(M)]: [tokens] (reason: [reason])"
+		log_admin(msg)
+		for(var/client/X in admins)
+			X << "<span class='adminnotice'><b><font color=red>[msg]</font></b></span>"
+		show_player_panel(M)
+
+	else if(href_list["toggle_whitelisted"])
+		if(!check_rights(R_PERMISSIONS))	return
+
+		var/mob/M = locate(href_list["toggle_whitelisted"])
+
+		var/reason = input("","What reason are you giving for toggling the whitelist for [get_ckey(M)]?") as text
+		if(length(reason) < 5)
+			usr << "That reason isn't good enough! Cancelling."
+			return
+
+		var/client/C = get_client(M)
+		C.is_whitelisted = !C.is_whitelisted
+		set_job_whitelisted(M, C.is_whitelisted)
+
+		var/msg = "WHITELISTED [get_ckey(usr)] toggled whitelist for [get_ckey(M)]: [C.is_whitelisted] (reason: [reason])"
 		log_admin(msg)
 		for(var/client/X in admins)
 			X << "<span class='adminnotice'><b><font color=red>[msg]</font></b></span>"
@@ -2261,3 +2315,8 @@
 				cyberman_broadcast_log()
 			if("9")//hacking log
 				cyberman_hacking_log()
+			if("10")//varedit-y stuff
+				cyberman_varedit(href_list)
+			if("11")
+				set_cybermen_queued_objective()
+		cybermen_panel()//refresh the page.
