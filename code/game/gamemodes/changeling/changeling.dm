@@ -22,6 +22,7 @@ var/list/slot2type = list("head" = /obj/item/clothing/head/changeling, "wear_mas
 	required_enemies = 1
 	recommended_enemies = 4
 	reroll_friendly = 1
+	yogstat_name = "changeling"
 
 
 	var/const/prob_int_murder_target = 50 // intercept names the assassination target half the time
@@ -67,7 +68,7 @@ var/list/slot2type = list("head" = /obj/item/clothing/head/changeling, "wear_mas
 	if(antag_candidates.len>0)
 		for(var/i = 0, i < num_changelings, i++)
 			if(!antag_candidates.len) break
-			var/datum/mind/changeling = pick(antag_candidates)
+			var/datum/mind/changeling = pick_candidate()
 			antag_candidates -= changeling
 			changelings += changeling
 			changeling.restricted_roles = restricted_jobs
@@ -105,7 +106,7 @@ var/list/slot2type = list("head" = /obj/item/clothing/head/changeling, "wear_mas
 	if(ticker.mode.changelings.len >= changelingcap) //Caps number of latejoin antagonists
 		return
 	if(ticker.mode.changelings.len <= (changelingcap - 2) || prob(100 - (config.changeling_scaling_coeff*2)))
-		if(character.client.prefs.be_special & BE_CHANGELING)
+		if(character.client.prefs.hasSpecialRole(BE_CHANGELING))
 			var/list/bans = jobban_list_for_mob(character.client)
 			if(!jobban_job_in_list(bans, "changeling") && !jobban_job_in_list(bans, "Syndicate"))
 				if(age_check(character.client))
@@ -238,6 +239,7 @@ var/list/slot2type = list("head" = /obj/item/clothing/head/changeling, "wear_mas
 
 /datum/game_mode/proc/auto_declare_completion_changeling()
 	if(changelings.len)
+		log_yogstat_data("gamemode.php?gamemode=changeling&value=rounds&action=add&changed=1")
 		var/text = "<br><font size=3><b>The changelings were:</b></font>"
 		for(var/datum/mind/changeling in changelings)
 			var/changelingwin = 1
@@ -265,9 +267,11 @@ var/list/slot2type = list("head" = /obj/item/clothing/head/changeling, "wear_mas
 			if(changelingwin)
 				text += "<br><font color='green'><b>The changeling was successful!</b></font>"
 				feedback_add_details("changeling_success","SUCCESS")
+				log_yogstat_data("gamemode.php?gamemode=changeling&value=antagwin&action=add&changed=1")
 			else
 				text += "<br><span class='boldannounce'>The changeling has failed.</span>"
 				feedback_add_details("changeling_success","FAIL")
+				log_yogstat_data("gamemode.php?gamemode=changeling&value=crewwin&action=add&changed=1")
 			text += "<br>"
 
 		world << text
@@ -295,6 +299,7 @@ var/list/slot2type = list("head" = /obj/item/clothing/head/changeling, "wear_mas
 	var/mimicing = ""
 	var/canrespec = 0
 	var/changeling_speak = 0
+	var/reverting = 0
 	var/datum/dna/chosen_dna
 	var/obj/effect/proc_holder/changeling/sting/chosen_sting
 
@@ -432,7 +437,7 @@ var/list/slot2type = list("head" = /obj/item/clothing/head/changeling, "wear_mas
 	user.facial_hair_style = chosen_prof.facial_hair_style
 	user.eye_color = chosen_prof.eye_color
 	user.features = chosen_prof.features
-	
+
 	domutcheck(user)
 	user.update_body()
 	user.update_hair()
@@ -478,7 +483,7 @@ var/list/slot2type = list("head" = /obj/item/clothing/head/changeling, "wear_mas
 	var/list/exists_list = list()
 	var/list/item_color_list = list()
 	var/list/item_state_list = list()
-	
+
 	var/gender = null
 	var/skin_tone = null
 	var/hair_color = null
@@ -490,3 +495,74 @@ var/list/slot2type = list("head" = /obj/item/clothing/head/changeling, "wear_mas
 
 /datum/changelingprofile/Destroy()
 	qdel(dna)
+
+//abomination stuff
+/datum/species/abomination
+	name = "???"
+	id = "abomination"
+	specflags = list(NOBREATH,COLDRES,NOGUNS,VIRUSIMMUNE,PIERCEIMMUNE,RADIMMUNE)
+	speedmod = 4
+	armor = 0
+	punchmod = 25
+	no_equip = list(slot_w_uniform,slot_glasses, slot_back, slot_ears)
+	attack_verb = "slash"
+	attack_sound = 'sound/weapons/bladeslice.ogg'
+	heatmod = 1.5
+
+/obj/item/clothing/suit/abomination
+	name = "fleshy hide"
+	desc = "A huge chunk of flesh. It seems to be shifting around itself."
+	icon_state = "golem"
+	item_state = "golem"
+	body_parts_covered = CHEST|GROIN|LEGS|ARMS
+	armor = list(melee = 80, bullet = 50, laser = 70,energy = 100, bomb = 30, bio = 100, rad = 0)
+	unacidable = 1
+	burn_state = -1
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
+	flags = ABSTRACT | NODROP
+
+/obj/item/clothing/shoes/abomination
+	name = "spiked hooks"
+	desc = "A fleshy membrane with spikes that dig into the ground below."
+	icon_state = "golem"
+	unacidable = 1
+	burn_state = -1
+	flags = NOSLIP | ABSTRACT | NODROP
+
+/obj/item/clothing/mask/muzzle/abomination
+	name = "distorted mouth"
+	desc = "A disgusting mouth with multiple rows of teeth. There's no way someone with this on could talk normally."
+	icon_state = "golem"
+	item_state = "golem"
+	flags = ABSTRACT | NODROP
+	armor = list(melee = 30, bullet = 20, laser = 30, energy = 50, bomb = 20, bio = 50, rad = 0)
+	unacidable = 1
+	burn_state = -1
+	flags_cover = MASKCOVERSEYES
+
+/obj/item/clothing/head/abomination
+	name = "hardened membrane"
+	icon_state = "golem"
+	item_state = "golem"
+	desc = "Hardened resin of some sort."
+	flags = ABSTRACT | NODROP
+	armor = list(melee = 50, bullet = 25, laser = 40,energy = 50, bomb = 10, bio = 50, rad = 0)
+	unacidable = 1
+	burn_state = -1
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+
+/obj/item/clothing/gloves/abomination
+	name = "hardened membrane"
+	desc = "A strange filament webbing that would fit around one's hands. They seem to be rather thick."
+	icon_state = "golem"
+	item_state = "golem"
+	siemens_coefficient = 0
+	permeability_coefficient = 0.9
+	cold_protection = HANDS
+	min_cold_protection_temperature = GLOVES_MIN_TEMP_PROTECT
+	heat_protection = HANDS
+	max_heat_protection_temperature = GLOVES_MAX_TEMP_PROTECT
+	unacidable = 1
+	burn_state = -1
+	flags = ABSTRACT | NODROP
+

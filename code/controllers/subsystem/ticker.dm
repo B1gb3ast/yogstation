@@ -45,6 +45,10 @@ var/datum/subsystem/ticker/ticker
 	var/list/queued_players = list()		//used for join queues when the server exceeds the hard population cap
 
 	var/obj/screen/cinematic = null			//used for station explosion cinematic
+	var/next_alert_time = 0
+	var/next_check_admin = 1
+
+	var/total_deaths = 0
 
 
 /datum/subsystem/ticker/New()
@@ -61,6 +65,7 @@ var/datum/subsystem/ticker/ticker
 	if(!syndicate_code_response)	syndicate_code_response	= generate_code_phrase()
 	setupGenetics()
 	setupFactions()
+	spawn(-1) send_discord_message("A new round is about to start. http://www.yogstation.net/play.php", DISCORD_PUBLIC)
 	..()
 
 /datum/subsystem/ticker/fire()
@@ -101,38 +106,35 @@ var/datum/subsystem/ticker/ticker
 		if(GAME_STATE_PLAYING)
 			mode.process(wait * 0.1)
 
+			if(world.time > next_alert_time && next_check_admin)
+				next_alert_time = world.time+1800 /* 6000 */
+
+				var/admins_online = total_admins_active()
+				var/unresolved_tickets = total_unresolved_tickets()
+
+				if(!admins_online)
+					next_check_admin = 0
+					spawn(-1) send_discord_message("There are no current admins active and theres [unresolved_tickets] unresolved tickets.", DISCORD_ADMIN)
+
 			if(!mode.explosion_in_progress && mode.check_finished() || force_ending)
 				current_state = GAME_STATE_FINISHED
+				ticket_counter_visible_to_everyone = 1
 				toggle_ooc(1) // Turn it on
 				declare_completion(force_ending)
 				spawn(50)
-					var/unresolved_tickets = 0
-					var/admins_online = 0
-					var/unresolved_tickets_ending = 0 //this is so we can avoid having a normal round ended reboot message as well
-					for(var/datum/admin_ticket/T in tickets_list)
-						if(!T.resolved)
-							unresolved_tickets++
-
-					for(var/client/X in admins)
-						admins_online++
-						var/invalid = 0
-						if(!check_rights_for(X, R_SERVER))
-							invalid = 1
-						if(X.is_afk())
-							invalid = 1
-						if(!invalid)
-							admins_online++
+					var/admins_online = total_admins_active()
+					var/unresolved_tickets = total_unresolved_tickets()
 
 					if(unresolved_tickets && admins_online)
 						ticker.delay_end = 1
 						message_admins("Not all tickets have been resolved. Server restart delayed.")
 					else if(unresolved_tickets && !admins_online)
-						unresolved_tickets_ending = 1
 						world.Reboot("Round ended, but there were still active tickets. Please submit a player complaint if you did not receive a response.", "end_proper", "ended with open tickets")
-					if(mode.station_was_nuked && !unresolved_tickets_ending)
-						world.Reboot("Station destroyed by Nuclear Device.", "end_proper", "nuke")
-					else if(!unresolved_tickets_ending)
-						world.Reboot("Round ended.", "end_proper", "proper completion")
+					else
+						if(mode.station_was_nuked)
+							world.Reboot("Station destroyed by Nuclear Device.", "end_proper", "nuke")
+						else
+							world.Reboot("Round ended.", "end_proper", "proper completion")
 
 /datum/subsystem/ticker/proc/setup()
 		//Create and announce mode
@@ -222,11 +224,11 @@ var/datum/subsystem/ticker/ticker
 		if(!config.allow_vote_restart)
 			var/admins_number = 0
 			for(var/client/admin in admins)
-				if(check_rights_for(admin, R_SERVER))
+				if(check_rights_for(admin, R_ADMIN))
 					admins_number++
 			if(admins_number == 0)
-				log_admin("No admins left with +SERVER. Restart vote allowed.")
-				message_admins("No admins left with +SERVER. Restart vote allowed.")
+				log_admin("No staff left with +ADMIN. Restart vote allowed.")
+				message_admins("No staff left with +ADMIN. Restart vote allowed.")
 				config.allow_vote_restart = 1
 
 	return 1
@@ -255,7 +257,11 @@ var/datum/subsystem/ticker/ticker
 			if(M.stat != DEAD)
 				var/turf/T = get_turf(M)
 				if(((station_missed == 0) && T && (T.z==1)) || ((station_missed > 1) && T && (T.z == station_missed)))
-					M.death(0) //no mercy
+					// The chef's meat locker is lead-lined to improve the taste of the meat
+					if (!istype(M.loc, /obj/structure/closet/secure_closet/freezer/meat))
+						M.death(0) //no mercy
+					else
+						M << "The freezer wobbles a bit, then stops. You let out a sigh of relief.";
 
 	//Now animate the cinematic
 	switch(station_missed)
@@ -441,6 +447,7 @@ var/datum/subsystem/ticker/ticker
 			if(robo) //How the hell do we lose robo between here and the world messages directly above this?
 				robo.laws.show_laws(world)
 
+	log_yogstat_data("gamemode.php?gamemode=[mode.yogstat_name]&value=deaths&action=add&changed=[total_deaths]")
 	mode.declare_completion()//To declare normal completion.
 
 	//calls auto_declare_completion_* for all modes
@@ -465,6 +472,19 @@ var/datum/subsystem/ticker/ticker
 	for(var/i in total_antagonists)
 		log_game("[i]s[total_antagonists[i]].")
 
+	if(borers.len)
+		var/total_borers = 0
+		for(var/mob/living/simple_animal/borer/B in borers)
+			if(B.stat != DEAD)
+				total_borers++
+		if(total_borers)
+			var/total_borer_hosts = 0
+			for(var/mob/living/carbon/C in mob_list)
+				var/turf/location = get_turf(C)
+				if(location.z == ZLEVEL_CENTCOM && C.borer && C.borer.stat != DEAD)
+					total_borer_hosts++
+			world << "<b>There were [total_borers] borers alive at round end!</b>"
+			world << "<b>A total of [total_borer_hosts] borers with hosts got to centcomm alive. The borers needed [total_borer_hosts_needed] hosts on the shuttle so they [(total_borer_hosts_needed <= total_borer_hosts) ? "<span class='greentext'>Won!</span>" : "<span class='redtext'>Lost!</span>"]</b>"
 	return 1
 
 /datum/subsystem/ticker/proc/send_random_tip()

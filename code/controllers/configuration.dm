@@ -62,6 +62,7 @@
 
 	var/forbid_singulo_possession = 0
 	var/useircbot = 0
+	var/usediscordbot = 0
 
 	var/admin_legacy_system = 0	//Defines whether the server uses the legacy admin system with admins.txt or the SQL system. Config option in config.txt
 	var/ban_legacy_system = 0	//Defines whether the server uses the legacy banning system with the files in /data or the SQL system. Config option in config.txt
@@ -167,6 +168,10 @@
 	var/reactionary_explosions = 0 //If we use reactionary explosions, explosions that react to walls and doors
 
 	var/autoconvert_notes = 0 //if all connecting player's notes should attempt to be converted to the database
+
+	var/yogstats_key = null
+	var/use_yogstats = 0
+	var/yogstats_url = null
 
 /datum/configuration/New()
 	var/list/L = typesof(/datum/game_mode) - /datum/game_mode
@@ -311,6 +316,8 @@
 					config.allow_holidays = 1
 				if("useircbot")
 					useircbot = 1
+				if("usediscordbot")
+					usediscordbot = 1
 				if("ticklag")
 					var/ticklag = text2num(value)
 					if(ticklag > 0)
@@ -354,6 +361,12 @@
 						world.log = newlog
 				if("autoconvert_notes")
 					config.autoconvert_notes = 1
+				if("yogstats_key")
+					config.yogstats_key = value
+				if("use_yogstats")
+					config.use_yogstats = 1
+				if("yogstats_url")
+					config.yogstats_url = value
 				else
 					diary << "Unknown setting in configuration: '[name]'"
 

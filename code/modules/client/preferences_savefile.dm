@@ -2,7 +2,7 @@
 #define SAVEFILE_VERSION_MIN	8
 
 //This is the current version, anything below this will attempt to update (if it's not obsolete)
-#define SAVEFILE_VERSION_MAX	15
+#define SAVEFILE_VERSION_MAX	16
 /*
 SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
 	This proc checks if the current directory of the savefile S needs updating
@@ -112,11 +112,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["UI_style_carbon"]	>> UI_style_carbon
 	S["UI_style_borg"]		>> UI_style_borg
 	S["UI_style_ai"]		>> UI_style_ai
-	S["be_special"]			>> be_special
+	S["be_special_roles"]	>> be_special
 	S["default_slot"]		>> default_slot
 	S["chat_toggles"]		>> chat_toggles
 	S["toggles"]			>> toggles
 	S["ghost_form"]			>> ghost_form
+	//S["ghost_orbit"]		>> ghost_orbit
 	S["agree"]				>> agree
 
 	//try to fix any outdated data if necessary
@@ -129,11 +130,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	UI_style_carbon	= sanitize_inlist(UI_style_carbon, everyone_carbon_uis|donator_carbon_uis, initial(UI_style_carbon))
 	UI_style_borg	= sanitize_inlist(UI_style_borg, everyone_borg_uis|donator_borg_uis, initial(UI_style_borg))
 	UI_style_ai		= sanitize_inlist(UI_style_ai, everyone_ai_uis|donator_ai_uis, initial(UI_style_ai))
-	be_special		= sanitize_integer(be_special, 0, 65535, initial(be_special))
+	//be_special		= sanitize_integer(be_special, 0, 65535, initial(be_special))
 	default_slot	= sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
 	toggles			= sanitize_integer(toggles, 0, 65535, initial(toggles))
 	ghost_form		= sanitize_inlist(ghost_form, ghost_forms, initial(ghost_form))
+	//ghost_orbit 	= sanitize_inlist(ghost_orbit, ghost_orbits, initial(ghost_orbit))
 	agree			= sanitize_integer(agree, -1, 65535, 0)
+
+	if(!be_special)
+		be_special = list()
 
 	return 1
 
@@ -151,11 +156,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["UI_style_carbon"]	<< UI_style_carbon
 	S["UI_style_borg"]		<< UI_style_borg
 	S["UI_style_ai"]		<< UI_style_ai
-	S["be_special"]			<< be_special
+	S["be_special_roles"]	<< be_special
 	S["default_slot"]		<< default_slot
 	S["toggles"]			<< toggles
 	S["chat_toggles"]		<< chat_toggles
 	S["ghost_form"]			<< ghost_form
+	//S["ghost_orbit"]		<< ghost_orbit
 	S["agree"]				<< agree
 
 	return 1
@@ -225,12 +231,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Jobs
 	S["userandomjob"]		>> userandomjob
+	S["job_civilian_ultra"]	>> job_civilian_ultra
 	S["job_civilian_high"]	>> job_civilian_high
 	S["job_civilian_med"]	>> job_civilian_med
 	S["job_civilian_low"]	>> job_civilian_low
+	S["job_medsci_ultra"]	>> job_medsci_ultra
 	S["job_medsci_high"]	>> job_medsci_high
 	S["job_medsci_med"]		>> job_medsci_med
 	S["job_medsci_low"]		>> job_medsci_low
+	S["job_engsec_ultra"]	>> job_engsec_ultra
 	S["job_engsec_high"]	>> job_engsec_high
 	S["job_engsec_med"]		>> job_engsec_med
 	S["job_engsec_low"]		>> job_engsec_low
@@ -281,12 +290,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["body_markings"] 	= sanitize_inlist(features["body_markings"], body_markings_list)
 
 	userandomjob	= sanitize_integer(userandomjob, 0, 1, initial(userandomjob))
+	job_civilian_ultra = sanitize_integer(job_civilian_ultra, 0, 65535, initial(job_civilian_ultra))
 	job_civilian_high = sanitize_integer(job_civilian_high, 0, 65535, initial(job_civilian_high))
 	job_civilian_med = sanitize_integer(job_civilian_med, 0, 65535, initial(job_civilian_med))
 	job_civilian_low = sanitize_integer(job_civilian_low, 0, 65535, initial(job_civilian_low))
+	job_medsci_ultra = sanitize_integer(job_medsci_ultra, 0, 65535, initial(job_medsci_ultra))
 	job_medsci_high = sanitize_integer(job_medsci_high, 0, 65535, initial(job_medsci_high))
 	job_medsci_med = sanitize_integer(job_medsci_med, 0, 65535, initial(job_medsci_med))
 	job_medsci_low = sanitize_integer(job_medsci_low, 0, 65535, initial(job_medsci_low))
+	job_engsec_ultra = sanitize_integer(job_engsec_ultra, 0, 65535, initial(job_engsec_ultra))
 	job_engsec_high = sanitize_integer(job_engsec_high, 0, 65535, initial(job_engsec_high))
 	job_engsec_med = sanitize_integer(job_engsec_med, 0, 65535, initial(job_engsec_med))
 	job_engsec_low = sanitize_integer(job_engsec_low, 0, 65535, initial(job_engsec_low))
@@ -337,12 +349,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Jobs
 	S["userandomjob"]		<< userandomjob
+	S["job_civilian_ultra"]	<< job_civilian_ultra
 	S["job_civilian_high"]	<< job_civilian_high
 	S["job_civilian_med"]	<< job_civilian_med
 	S["job_civilian_low"]	<< job_civilian_low
+	S["job_medsci_ultra"]	<< job_medsci_ultra
 	S["job_medsci_high"]	<< job_medsci_high
 	S["job_medsci_med"]		<< job_medsci_med
 	S["job_medsci_low"]		<< job_medsci_low
+	S["job_engsec_ultra"]	<< job_engsec_ultra
 	S["job_engsec_high"]	<< job_engsec_high
 	S["job_engsec_med"]		<< job_engsec_med
 	S["job_engsec_low"]		<< job_engsec_low

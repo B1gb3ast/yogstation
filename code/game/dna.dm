@@ -30,12 +30,15 @@
 	if(new_holder && istype(new_holder))
 		holder = new_holder
 
-/datum/dna/proc/transfer_identity(mob/living/carbon/destination)
+/datum/dna/proc/transfer_identity(mob/living/carbon/destination, transfer_SE = 0)
 	if(check_dna_integrity(destination))
 		destination.dna.unique_enzymes = unique_enzymes
 		destination.dna.uni_identity = uni_identity
 		destination.dna.blood_type = blood_type
-		hardset_dna(destination, null, null, null, null, species)
+		if(transfer_SE)
+			hardset_dna(destination, null, struc_enzymes, null, null, species.type)
+		else
+			hardset_dna(destination, null, null, null, null, species.type)
 		destination.dna.features = features
 		destination.dna.real_name = real_name
 		destination.dna.mutations = mutations
@@ -131,17 +134,21 @@
 		spans |= M.get_spans()
 	return spans
 
-/proc/hardset_dna(mob/living/carbon/owner, ui, se, real_name, blood_type, datum/species/mrace, features)
+/mob/living/carbon/proc/set_species(species_type)
+	if(species_type && dna)
+		if(dna.species)
+			dna.species.on_species_loss(src)
+		dna.species = new species_type()
+		dna.species.on_species_gain(src)
+
+/proc/hardset_dna(mob/living/carbon/owner, ui, se, real_name, blood_type, mrace, features)
 	if(!ismonkey(owner) && !ishuman(owner))
 		return
 	if(!owner.dna)
 		create_dna(owner, mrace)
 
 	if(mrace && !ismonkey(owner))
-		if(owner.dna.species.exotic_blood)
-			var/datum/reagent/exotic_blood = new owner.dna.species.exotic_blood
-			owner.reagents.del_reagent(exotic_blood.id)
-		owner.dna.species = new mrace()
+		owner.set_species(mrace)
 
 	if(features)
 		owner.dna.features = features

@@ -1,6 +1,8 @@
 /obj/item/weapon/melee/energy
 	var/active = 0
 	var/force_on = 30 //force when active
+	var/armourpenetration_on = 10 //so you can't deal high damage when deactivated
+	var/armourpenetration_off = 0 //so you don't stick with the armor pen forever
 	var/throwforce_on = 20
 	var/icon_state_on = "axe1"
 	var/list/attack_verb_on = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
@@ -49,21 +51,24 @@
 	throw_range = 5
 	flags = NOSHIELD
 	origin_tech = "magnets=3;syndicate=4"
+	block_chance = 50
 	var/hacked = 0
 
 /obj/item/weapon/melee/energy/sword/New()
 	if(item_color == null)
 		item_color = pick("red", "blue", "green", "purple")
 
-/obj/item/weapon/melee/energy/sword/IsShield()
+/obj/item/weapon/melee/energy/sword/hit_reaction(mob/living/carbon/human/owner, attack_text, final_block_chance)
 	if(active)
-		return 1
+		return ..()
 	return 0
 
 /obj/item/weapon/melee/energy/sword/attack(mob/vict, mob/usr)
 	if (istype(vict, /mob/living/carbon))
 		var/blockable = 0
 		var/blockitem = null
+		if (vict == usr)
+			return ..()
 		if (istype(vict.get_active_hand(), /obj/item/weapon/melee/energy))
 			var/obj/item/weapon/melee/energy/blocktool = vict.get_active_hand()
 			if (blocktool.active)
@@ -90,6 +95,7 @@
 	if (active)
 		force = force_on
 		throwforce = throwforce_on
+		armour_penetration = armourpenetration_on
 		hitsound = 'sound/weapons/blade1.ogg'
 		if(attack_verb_on.len)
 			attack_verb = attack_verb_on
@@ -103,6 +109,7 @@
 	else
 		force = initial(force)
 		throwforce = initial(throwforce)
+		armour_penetration = armourpenetration_off
 		hitsound = initial(hitsound)
 		if(attack_verb_on.len)
 			attack_verb = list()
@@ -114,7 +121,7 @@
 	return
 
 /obj/item/weapon/melee/energy/sword/cyborg
-	var/hitcost = 500
+	var/hitcost = 150
 
 /obj/item/weapon/melee/energy/sword/cyborg/attack(mob/M, var/mob/living/silicon/robot/R)
 	if(R.cell)

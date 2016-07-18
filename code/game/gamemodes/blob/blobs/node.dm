@@ -2,8 +2,11 @@
 	name = "blob node"
 	icon = 'icons/mob/blob.dmi'
 	icon_state = "blank_blob"
-	health = 100
-	fire_resist = 2
+	desc = "A large, pulsating yellow mass."
+	health = 125
+	maxhealth = 125
+	health_regen = 3
+	fire_resist = 0.5
 
 /obj/effect/blob/node/New(loc, var/h = 100)
 	blob_nodes += src
@@ -28,7 +31,7 @@
 	..()
 
 /obj/effect/blob/node/Life()
-	pulseLoop(5)
+	Pulse_Area(overmind, 10, 3, 2)
 	health = min(initial(health), health + 1)
 	color = null
 

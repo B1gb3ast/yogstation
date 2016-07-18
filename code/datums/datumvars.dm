@@ -288,7 +288,8 @@
 	var/list/names = list()
 	for (var/V in D.vars)
 		names += V
-
+	sleep(1) //For some reason, without this sleep, VVing will cause client to disconnect on certain objects.
+	
 	names = sortList(names)
 
 	for (var/V in names)
@@ -619,6 +620,7 @@ body
 						if(Obj.type == O_type)
 							i++
 							qdel(Obj)
+						CHECK_TICK
 					if(!i)
 						usr << "No objects of this type exist"
 						return
@@ -630,6 +632,7 @@ body
 						if(istype(Obj,O_type))
 							i++
 							qdel(Obj)
+						CHECK_TICK
 					if(!i)
 						usr << "No objects of this type exist"
 						return

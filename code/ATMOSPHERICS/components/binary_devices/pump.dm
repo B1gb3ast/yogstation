@@ -22,6 +22,8 @@ Thus, the two variables affect pump operation are set in New():
 	var/on = 0
 	var/target_pressure = ONE_ATMOSPHERE
 
+	var/adminlog = 0 //used for annoying admins with popups whenever someone toggles the pump. defaults to 0 = do not annoy admins
+
 	var/frequency = 0
 	var/id = null
 	var/datum/radio_frequency/radio_connection
@@ -29,6 +31,9 @@ Thus, the two variables affect pump operation are set in New():
 /obj/machinery/atmospherics/components/binary/pump/Destroy()
 	if(radio_controller)
 		radio_controller.remove_object(src,frequency)
+
+	if(adminlog == 1)
+		message_admins("[key_name_admin(usr)]<A HREF='?_src_=holder;adminmoreinfo=\ref[usr]'>?</A> (<A HREF='?_src_=holder;adminplayerobservefollow=\ref[usr]'>FLW</A>) destroyed protected device '[src]'. <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[loc.x];Y=[loc.y];Z=[loc.z]'>(JMP)</a> This alert will not show again for this device.")
 	..()
 
 /obj/machinery/atmospherics/components/binary/pump/on
@@ -97,7 +102,7 @@ Thus, the two variables affect pump operation are set in New():
 
 	return 1
 
-/obj/machinery/atmospherics/components/binary/pump/ui_interact(mob/user, ui_key = "main", datum/nanoui/ui = null)
+/obj/machinery/atmospherics/components/binary/pump/nanoui_interact(mob/user, ui_key = "main", datum/nanoui/ui = null)
 	if(stat & (BROKEN|NOPOWER))
 		return
 
@@ -156,7 +161,7 @@ Thus, the two variables affect pump operation are set in New():
 		user << "<span class='danger'>Access denied.</span>"
 		return
 	usr.set_machine(src)
-	ui_interact(user)
+	nanoui_interact(user)
 	return
 
 /obj/machinery/atmospherics/components/binary/pump/Topic(href,href_list)
@@ -164,6 +169,10 @@ Thus, the two variables affect pump operation are set in New():
 	if(href_list["power"])
 		on = !on
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(usr)]", "atmos")
+
+	if(adminlog == 1)
+		message_admins("[key_name_admin(usr)]<A HREF='?_src_=holder;adminmoreinfo=\ref[usr]'>?</A> (<A HREF='?_src_=holder;adminplayerobservefollow=\ref[usr]'>FLW</A>) has toggled [src] [on ? "ON" : "OFF"]. ([loc.x],[loc.y],[loc.z]) <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[loc.x];Y=[loc.y];Z=[loc.z]'>(JMP)</a>")
+
 	if(href_list["set_press"])
 		switch(href_list["set_press"])
 			if ("max")
@@ -181,7 +190,7 @@ Thus, the two variables affect pump operation are set in New():
 	update_icon()
 
 /obj/machinery/atmospherics/components/binary/pump/attackby(obj/item/weapon/W, mob/user, params)
-	if (!istype(W, /obj/item/weapon/wrench))
+	if (!istype(W, /obj/item/weapon/tool/wrench))
 		return ..()
 	if (!(stat & NOPOWER) && on)
 		user << "<span class='warning'>You cannot unwrench this [src], turn it off first!</span>"

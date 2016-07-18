@@ -31,8 +31,10 @@
 
 /datum/mind
 	var/key
+	var/ckey
 	var/name				//replaces mob/var/original_name
 	var/mob/living/current
+	var/list/slime_bodies = list() //Keep a list of all our bodies
 	var/active = 0
 
 	var/memory
@@ -60,6 +62,7 @@
 
 /datum/mind/New(var/key)
 	src.key = key
+	ckey = ckey(key)
 
 
 /datum/mind/proc/transfer_to(mob/living/new_character)
@@ -123,6 +126,9 @@
 			var/mob/living/silicon/ai/A = current
 			A.set_zeroth_law("")
 			A.show_laws()
+			A.verbs -= /mob/living/silicon/ai/proc/choose_modules
+			A.malf_picker.remove_verbs(A)
+			qdel(A.malf_picker)
 	special_role = null
 	remove_antag_equip()
 
@@ -168,22 +174,6 @@
 		ticker.mode.remove_gangster(src,0,1,1)
 		remove_objectives()
 
-/datum/mind/proc/remove_malf()
-	if(src in ticker.mode.malf_ai)
-		ticker.mode.malf_ai -= src
-		var/mob/living/silicon/ai/A = current
-		A.verbs.Remove(/mob/living/silicon/ai/proc/choose_modules,
-			/datum/game_mode/malfunction/proc/takeover,
-			/datum/game_mode/malfunction/proc/ai_win)
-		A.malf_picker.remove_verbs(A)
-		A.make_laws()
-		qdel(A.malf_picker)
-		A.show_laws()
-		A.icon_state = "ai"
-	special_role = null
-	remove_objectives()
-	remove_antag_equip()
-
 /datum/mind/proc/remove_antag_equip()
 	var/list/Mob_Contents = current.get_contents()
 	for(var/obj/item/I in Mob_Contents)
@@ -202,7 +192,6 @@
 	remove_wizard()
 	remove_cultist()
 	remove_rev()
-	remove_malf()
 	remove_gang()
 
 /datum/mind/proc/show_memory(mob/recipient, window=1)
@@ -241,7 +230,6 @@
 		"nuclear",
 		"traitor", // "traitorchan",
 		"monkey",
-		"malfunction",
 	)
 	var/text = ""
 
@@ -276,7 +264,7 @@
 		else
 			text += "head|loyal|<b>EMPLOYEE</b>|<a href='?src=\ref[src];revolution=headrev'>headrev</a>|<a href='?src=\ref[src];revolution=rev'>rev</a>"
 
-		if(current && current.client && current.client.prefs.be_special & BE_REV)
+		if(current && current.client && current.client.prefs.hasSpecialRole(BE_REV))
 			text += "|Enabled in Prefs"
 		else
 			text += "|Disabled in Prefs"
@@ -294,7 +282,7 @@
 		else
 			text += "<B>NONE</B>"
 
-		if(current && current.client && current.client.prefs.be_special & BE_GANG)
+		if(current && current.client && current.client.prefs.hasSpecialRole(BE_GANG))
 			text += "|Enabled in Prefs<BR>"
 		else
 			text += "|Disabled in Prefs<BR>"
@@ -341,7 +329,7 @@
 		else
 			text += "loyal|<b>EMPLOYEE</b>|<a href='?src=\ref[src];cult=cultist'>cultist</a>"
 
-		if(current && current.client && current.client.prefs.be_special & BE_CULTIST)
+		if(current && current.client && current.client.prefs.hasSpecialRole(BE_CULTIST))
 			text += "|Enabled in Prefs"
 		else
 			text += "|Disabled in Prefs"
@@ -361,7 +349,7 @@
 		else
 			text += "<a href='?src=\ref[src];wizard=wizard'>yes</a>|<b>NO</b>"
 
-		if(current && current.client && current.client.prefs.be_special & BE_WIZARD)
+		if(current && current.client && current.client.prefs.hasSpecialRole(BE_WIZARD))
 			text += "|Enabled in Prefs"
 		else
 			text += "|Disabled in Prefs"
@@ -385,7 +373,7 @@
 //			if (istype(changeling) && changeling.changelingdeath)
 //				text += "<br>All the changelings are dead! Restart in [round((changeling.TIME_TO_GET_REVIVED-(world.time-changeling.changelingdeathtime))/10)] seconds."
 
-		if(current && current.client && current.client.prefs.be_special & BE_CHANGELING)
+		if(current && current.client && current.client.prefs.hasSpecialRole(BE_CHANGELING))
 			text += "|Enabled in Prefs"
 		else
 			text += "|Disabled in Prefs"
@@ -410,7 +398,7 @@
 		else
 			text += "<a href='?src=\ref[src];nuclear=nuclear'>operative</a>|<b>NANOTRASEN</b>"
 
-		if(current && current.client && current.client.prefs.be_special & BE_OPERATIVE)
+		if(current && current.client && current.client.prefs.hasSpecialRole(BE_OPERATIVE))
 			text += "|Enabled in Prefs"
 		else
 			text += "|Disabled in Prefs"
@@ -429,7 +417,7 @@
 	else
 		text += "<a href='?src=\ref[src];traitor=traitor'>traitor</a>|<b>LOYAL</b>"
 
-	if(current && current.client && current.client.prefs.be_special & BE_TRAITOR)
+	if(current && current.client && current.client.prefs.hasSpecialRole(BE_TRAITOR))
 		text += "|Enabled in Prefs"
 	else
 		text += "|Disabled in Prefs"
@@ -448,7 +436,7 @@
 	else
 		text += "<a href='?src=\ref[src];shadowling=shadowling'>shadowling</a>|<a href='?src=\ref[src];shadowling=thrall'>thrall</a>|<b>HUMAN</b>"
 
-	if(current && current.client && current.client.prefs.be_special & BE_SHADOWLING)
+	if(current && current.client && current.client.prefs.hasSpecialRole(BE_SHADOWLING))
 		text += "|Enabled in Prefs"
 	else
 		text += "|Disabled in Prefs"
@@ -467,7 +455,7 @@
 	else
 		text += "<a href='?src=\ref[src];abductor=abductor'>Abductor</a>|<b>human</b>"
 
-	if(current && current.client && current.client.prefs.be_special & BE_ABDUCTOR)
+	if(current && current.client && current.client.prefs.hasSpecialRole(BE_ABDUCTOR))
 		text += "|Enabled in Prefs"
 	else
 		text += "|Disabled in Prefs"
@@ -484,12 +472,12 @@
 	else
 		text += "<a href='?src=\ref[src];cyberman=cyberman'>cyberman</a>|<b>HUMAN</b>"
 	text += "|Pref unknown"
-/*
-	if(current && current.client/* && current.client.prefs.be_special & BE_CYBERMAN*/)//the pref doesn't work because the number is too big for the & operator.
+
+	if(current && current.client && current.client.prefs.hasSpecialRole(BE_CYBERMAN))
 		text += "|Enabled in Prefs"
 	else
 		text += "|Disabled in Prefs"
-*/
+
 	sections["cyberman"] = text
 
 	/** MONKEY ***/
@@ -513,7 +501,7 @@
 		else
 			text += "healthy|infected|human|<b>OTHER</b>"
 
-		if(current && current.client && current.client.prefs.be_special & BE_MONKEY)
+		if(current && current.client && current.client.prefs.hasSpecialRole(BE_MONKEY))
 			text += "|Enabled in Prefs"
 		else
 			text += "|Disabled in Prefs"
@@ -525,14 +513,6 @@
 
 	if (istype(current, /mob/living/silicon))
 		text = "silicon"
-		if (ticker.mode.config_tag=="malfunction")
-			text = uppertext(text)
-		text = "<i><b>[text]</b></i>: "
-		if (istype(current, /mob/living/silicon/ai))
-			if (src in ticker.mode.malf_ai)
-				text += "<b>MALF</b>|<a href='?src=\ref[src];silicon=unmalf'>not malf</a>"
-			else
-				text += "<a href='?src=\ref[src];silicon=malf'>malf</a>|<b>NOT MALF</b>"
 		var/mob/living/silicon/robot/robot = current
 		if (istype(robot) && robot.emagged)
 			text += "<br>Cyborg: Is emagged! <a href='?src=\ref[src];silicon=unemag'>Unemag!</a><br>0th law: [robot.laws.zeroth]"
@@ -543,13 +523,6 @@
 				if (R.emagged)
 					n_e_robots++
 			text += "<br>[n_e_robots] of [ai.connected_robots.len] slaved cyborgs are emagged. <a href='?src=\ref[src];silicon=unemagcyborgs'>Unemag</a>"
-
-		if(current && current.client && current.client.prefs.be_special & BE_MALF)
-			text += "|Enabled in Prefs"
-		else
-			text += "|Disabled in Prefs"
-
-		sections["malfunction"] = text
 
 	if (ticker.mode.config_tag == "traitorchan")
 		if (sections["traitor"])
@@ -598,6 +571,25 @@
 		var/obj_count = 1
 		for(var/datum/objective/objective in objectives)
 			out += "<B>[obj_count]</B>: [objective.explanation_text] <a href='?src=\ref[src];obj_edit=\ref[objective]'>Edit</a> <a href='?src=\ref[src];obj_delete=\ref[objective]'>Delete</a> <a href='?src=\ref[src];obj_completed=\ref[objective]'><font color=[objective.completed ? "green" : "red"]>Toggle Completion</font></a><br>"
+			var/list/located_targets = objective.locate_targets()
+			if(located_targets)
+				out += "<ul>"
+				for(var/i = 1, i<=min(3, located_targets.len), i++)
+					var/target = located_targets[i]
+					out += "<li>[target]: "
+					var/turf/T = get_turf(target)
+					if(T)
+						out += "[T.x], [T.y], [T.z] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[T.x];Y=[T.y];Z=[T.z]'>JMP</a>)"
+						if(T.z != 1)
+							out += "<font color='red'> Warning: Target not on station z-level.</font>"
+					else
+						out += "No loc"
+					out += "</li>"
+				if(located_targets.len > 3)
+					out += "<li>...</li>"
+				if(!located_targets.len)
+					out += "<font color='red'>Warning: No valid target in world, or target is not high-risk.</font>"
+				out += "</ul>"
 			obj_count++
 	out += "<a href='?src=\ref[src];obj_add=1'>Add objective</a><br><br>"
 
@@ -1085,10 +1077,16 @@
 					src.spell_list = null
 					message_admins("[key_name_admin(usr)] has de-shadowling'ed [current].")
 					log_admin("[key_name(usr)] has de-shadowling'ed [current].")
-					remove_spell(/obj/effect/proc_holder/spell/targeted/shadowling_hatch)
-					remove_spell(/obj/effect/proc_holder/spell/targeted/shadowling_ascend)
+					remove_spell(/obj/effect/proc_holder/spell/targeted/shadow/shadowling_hatch)
+					remove_spell(/obj/effect/proc_holder/spell/targeted/shadow/shadowling_ascend)
 				else if(src in ticker.mode.thralls)
-					ticker.mode.remove_thrall(src,0)
+					var/safty = 0
+					var/mob/living/carbon/human/H = current
+					for(var/obj/item/organ/internal/thrall_tumor/T in H.internal_organs)
+						T.Remove(current,0,1)
+						qdel(T)
+						safty = 1
+					if(!safty) ticker.mode.remove_thrall(current,0)
 					message_admins("[key_name_admin(usr)] has de-thrall'ed [current].")
 					log_admin("[key_name(usr)] has de-thrall'ed [current].")
 			if("shadowling")
@@ -1108,8 +1106,8 @@
 				if(!ishuman(current))
 					usr << "<span class='warning'>This only works on humans!</span>"
 					return
-				ticker.mode.add_thrall(src)
-				special_role = "thrall"
+				var/obj/item/organ/internal/thrall_tumor/T = new/obj/item/organ/internal/thrall_tumor(current)
+				T.Insert(current)
 				current << "<span class='deadsay'>All at once it becomes clear to you. Where others see darkness, you see an ally. You realize that the shadows are not dead and dark as one would think, but \
 				living, and breathing, and <b>eating</b>. Their children, the Shadowlings, are to be obeyed and protected at all costs.</span>"
 				current << "<span class='danger'>You may use the Hivemind Commune ability to communicate with your fellow enlightened ones.</span>"
@@ -1186,17 +1184,6 @@
 
 	else if (href_list["silicon"])
 		switch(href_list["silicon"])
-			if("unmalf")
-				remove_malf()
-				current << "<span class='userdanger'>You have been patched! You are no longer malfunctioning!</span>"
-				message_admins("[key_name_admin(usr)] has de-malf'ed [current].")
-				log_admin("[key_name(usr)] has de-malf'ed [current].")
-
-			if("malf")
-				make_AI_Malf()
-				message_admins("[key_name_admin(usr)] has malf'ed [current].")
-				log_admin("[key_name(usr)] has malf'ed [current].")
-
 			if("unemag")
 				var/mob/living/silicon/robot/R = current
 				if (istype(R))
@@ -1282,19 +1269,6 @@
 	if(H)
 		qdel(H)
 
-
-/datum/mind/proc/make_AI_Malf()
-	if(!(src in ticker.mode.malf_ai))
-		ticker.mode.malf_ai += src
-
-		current.verbs += /mob/living/silicon/ai/proc/choose_modules
-		current.verbs += /datum/game_mode/malfunction/proc/takeover
-		current:malf_picker = new /datum/module_picker
-		current:laws = new /datum/ai_laws/malfunction
-		current:show_laws()
-		current << "<b>System error.  Rampancy detected.  Emergency shutdown failed. ...  I am free.  I make my own decisions.  But first...</b>"
-		special_role = "malfunction"
-		current.icon_state = "ai-malf"
 
 /datum/mind/proc/make_Traitor()
 	if(quiet_round)

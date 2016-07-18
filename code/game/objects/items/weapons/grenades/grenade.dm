@@ -88,7 +88,7 @@
 
 
 /obj/item/weapon/grenade/attackby(obj/item/weapon/W, mob/user, params)
-	if(istype(W, /obj/item/weapon/screwdriver))
+	if(istype(W, /obj/item/weapon/tool/screwdriver))
 		switch(det_time)
 			if ("1")
 				det_time = 10
@@ -111,3 +111,9 @@
 
 /obj/item/weapon/grenade/attack_paw(mob/user)
 	return attack_hand(user)
+
+/obj/item/weapon/grenade/hit_reaction(mob/living/carbon/human/owner, attack_text, final_block_chance, damage, attack_type)
+	if(damage && attack_type == PROJECTILE_ATTACK && prob(15))
+		owner.visible_message("<span class='danger'>[attack_text] hits [owner]'s [src], setting it off! What a shot!</span>")
+		prime()
+		return 1

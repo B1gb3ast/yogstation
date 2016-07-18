@@ -78,7 +78,7 @@
 			user << "<span class='notice'>You install a cell in [src].</span>"
 			update_icon()
 
-	else if(istype(W, /obj/item/weapon/screwdriver))
+	else if(istype(W, /obj/item/weapon/tool/screwdriver))
 		if(bcell)
 			bcell.updateicon()
 			bcell.loc = get_turf(src.loc)
@@ -136,6 +136,12 @@
 
 
 /obj/item/weapon/melee/baton/proc/baton_stun(mob/living/L, mob/user)
+	if(ishuman(L))
+		var/mob/living/carbon/human/H = L
+		if(H.check_shields(0, "[user]'s [name]", src))
+			playsound(L, 'sound/weapons/Genhit.ogg', 50, 1)
+			return 0
+
 	user.lastattacked = L
 	L.lastattacker = user
 

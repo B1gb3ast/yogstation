@@ -8,9 +8,7 @@
 	When somebody clicks a link in game, this Topic is called first.
 	It does the stuff in this proc and  then is redirected to the Topic() proc for the src=[0xWhatever]
 	(if specified in the link). ie locate(hsrc).Topic()
-
 	Such links can be spoofed.
-
 	Because of this certain things MUST be considered whenever adding a Topic() for something:
 		- Can it be fed harmful values which could cause runtimes?
 		- Is the Topic call an admin-only thing?
@@ -76,6 +74,41 @@
 			cmd_ahelp_reply(href_list["priv_msg"])
 			return
 		cmd_admin_pm(href_list["priv_msg"],null)
+
+		return
+
+	if(href_list["view_admin_ticket"])
+		var/id = text2num(href_list["view_admin_ticket"])
+		var/client/C = usr.client
+		if(!C.holder)
+			message_admins("EXPLOIT \[admin_ticket\]: [usr] attempted to operate ticket [id].")
+			return
+
+		for(var/datum/admin_ticket/T in tickets_list)
+			if(T.ticket_id == id)
+				T.view_log()
+				return
+
+		usr << "The ticket ID #[id] doesn't exist."
+
+		return
+
+	if(href_list["toggle_be_special"])
+		var/role_flag = href_list["toggle_be_special"]
+		var/client/C = locate(href_list["_src_"])
+
+		if(!C.prefs.hasSpecialRole(role_flag))
+			C.prefs.be_special[role_flag] = spec_roles[role_flag]
+		else
+			C.prefs.be_special -= role_flag
+
+		C.prefs.save_preferences()
+
+		var/item = spec_roles[role_flag]
+		src << "You will [(C.prefs.hasSpecialRole(role_flag)) ? "now" : "no longer"] be considered for [item["name"]] events [(C.prefs.hasSpecialRole(role_flag)) ? "(where possible)" : ""]"
+		feedback_add_details("admin_verb","TBeSpecial") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
+		toggle_be_special()
 
 		return
 
@@ -178,6 +211,9 @@ var/next_external_rsc = 0
 		admins += src
 		holder.owner = src
 
+	//Need to load before we load preferences for correctly removing Ultra if user no longer whitelisted
+	is_whitelisted = is_job_whitelisted(src)
+
 	//preferences datum - also holds some persistant data for the client (because we may as well keep these datums to a minimum)
 	prefs = preferences_datums[ckey]
 	if(!prefs)
@@ -232,15 +268,16 @@ var/next_external_rsc = 0
 
 	if(holder)
 		message_admins("Admin login: [key_name(src)]")
-		if(config.allow_vote_restart && check_rights_for(src, R_SERVER))
-			log_admin("Admin with +SERVER logged in. Restart vote disallowed.")
-			message_admins("Admin with +SERVER logged in. Restart vote disallowed.")
+		if(config.allow_vote_restart && check_rights_for(src, R_ADMIN))
+			log_admin("Staff joined with +ADMIN. Restart vote disallowed.")
+			message_admins("Staff joined with +ADMIN. Restart vote disallowed.")
 			config.allow_vote_restart = 0
 		add_admin_verbs()
 		add_donor_verbs()
-		admin_memo_output("Show")
+		admin_memo_show()
 		if((global.comms_key == "default_pwd" || length(global.comms_key) <= 6) && global.comms_allowed) //It's the default value or less than 6 characters long, but it somehow didn't disable comms.
 			src << "<span class='danger'>The server's API key is either too short or is the default value! Consider changing it immediately!</span>"
+		verbs += /client/verb/weightstats
 
 	send_resources()
 
@@ -276,6 +313,7 @@ var/next_external_rsc = 0
 			T.add_log(new /datum/ticket_log(T, src, "¤ Disconnected ¤", 1))
 
 	if(holder)
+		ticker.next_check_admin = 1
 		holder.owner = null
 		admins -= src
 	sync_logout_with_db(connection_number)
@@ -404,49 +442,6 @@ proc/sync_logout_with_db(number)
 		'html/browser/common.css',
 		'html/browser/scannernew.css',
 		'html/browser/playeroptions.css',
-		'icons/pda_icons/pda_atmos.png',
-		'icons/pda_icons/pda_back.png',
-		'icons/pda_icons/pda_bell.png',
-		'icons/pda_icons/pda_blank.png',
-		'icons/pda_icons/pda_boom.png',
-		'icons/pda_icons/pda_bucket.png',
-		'icons/pda_icons/pda_chatroom.png',
-		'icons/pda_icons/pda_medbot.png',
-		'icons/pda_icons/pda_floorbot.png',
-		'icons/pda_icons/pda_cleanbot.png',
-		'icons/pda_icons/pda_crate.png',
-		'icons/pda_icons/pda_cuffs.png',
-		'icons/pda_icons/pda_eject.png',
-		'icons/pda_icons/pda_exit.png',
-		'icons/pda_icons/pda_flashlight.png',
-		'icons/pda_icons/pda_honk.png',
-		'icons/pda_icons/pda_mail.png',
-		'icons/pda_icons/pda_medical.png',
-		'icons/pda_icons/pda_menu.png',
-		'icons/pda_icons/pda_mule.png',
-		'icons/pda_icons/pda_notes.png',
-		'icons/pda_icons/pda_power.png',
-		'icons/pda_icons/pda_rdoor.png',
-		'icons/pda_icons/pda_reagent.png',
-		'icons/pda_icons/pda_refresh.png',
-		'icons/pda_icons/pda_scanner.png',
-		'icons/pda_icons/pda_signaler.png',
-		'icons/pda_icons/pda_status.png',
-		'icons/pda_icons/pda_botany.png',
-		'icons/spideros_icons/sos_1.png',
-		'icons/spideros_icons/sos_2.png',
-		'icons/spideros_icons/sos_3.png',
-		'icons/spideros_icons/sos_4.png',
-		'icons/spideros_icons/sos_5.png',
-		'icons/spideros_icons/sos_6.png',
-		'icons/spideros_icons/sos_7.png',
-		'icons/spideros_icons/sos_8.png',
-		'icons/spideros_icons/sos_9.png',
-		'icons/spideros_icons/sos_10.png',
-		'icons/spideros_icons/sos_11.png',
-		'icons/spideros_icons/sos_12.png',
-		'icons/spideros_icons/sos_13.png',
-		'icons/spideros_icons/sos_14.png',
 		'icons/stamp_icons/large_stamp-clown.png',
 		'icons/stamp_icons/large_stamp-deny.png',
 		'icons/stamp_icons/large_stamp-ok.png',
@@ -482,7 +477,6 @@ var SWbem = new ActiveXObject("WbemScripting.SWbemLocator");
 var WMI = SWbem.ConnectServer(".");
 var data = WMI.ExecQuery("SELECT [field_names] FROM [class]");
 [array_declaration]
-
 var values = new Array();
 var index = 0;
 var e = new Enumerator(data);

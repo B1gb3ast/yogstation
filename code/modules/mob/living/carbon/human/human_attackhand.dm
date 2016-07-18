@@ -1,8 +1,10 @@
 /mob/living/carbon/human/attack_hulk(mob/living/carbon/human/user)
+	var/dam_zone = pick("chest", "l_hand", "r_hand", "l_leg", "r_leg")
+	var/obj/item/organ/limb/affecting = get_organ(ran_zone(dam_zone))
 	if(user.a_intent == "harm")
 		..(user, 1)
-		adjustBruteLoss(5)
-		Weaken(4)
+		apply_damage(15, BRUTE, affecting, run_armor_check(affecting, "melee"))
+		//Weaken(4)
 
 /mob/living/carbon/human/attack_hand(mob/living/carbon/human/M)
 	if(..())	//to allow surgery to return properly.

@@ -31,6 +31,7 @@
 	var/turf/curloc = user.loc
 	if (!istype(targloc) || !istype(curloc) || !BB)
 		return 0
+	BB.ammo_casing = src//has to be here to avoid null pointers.
 	if(targloc == curloc)
 		if(BB.original == user) //if we target ourselves we go straight to bullet_act()
 			user.bullet_act(BB)

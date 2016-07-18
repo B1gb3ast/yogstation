@@ -12,6 +12,7 @@
 	round_ends_with_antag_death = 1
 	var/use_huds = 0
 	var/finished = 0
+	yogstat_name = "wizard"
 
 /datum/game_mode/wizard/announce()
 	world << "<B>The current game mode is - Wizard!</B>"
@@ -19,7 +20,7 @@
 
 /datum/game_mode/wizard/pre_setup()
 
-	var/datum/mind/wizard = pick(antag_candidates)
+	var/datum/mind/wizard = pick_candidate()
 	wizards += wizard
 	modePlayer += wizard
 	wizard.assigned_role = "Wizard"
@@ -36,9 +37,9 @@
 /datum/game_mode/wizard/post_setup()
 	for(var/datum/mind/wizard in wizards)
 		log_game("[wizard.key] (ckey) has been selected as a Wizard")
-		forge_wizard_objectives(wizard)
 		//learn_basic_spells(wizard.current)
 		equip_wizard(wizard.current)
+		forge_wizard_objectives(wizard)
 		name_wizard(wizard.current)
 		greet_wizard(wizard)
 		if(use_huds)
@@ -191,6 +192,7 @@
 
 /datum/game_mode/proc/auto_declare_completion_wizard()
 	if(wizards.len)
+		log_yogstat_data("gamemode.php?gamemode=wizard&value=rounds&action=add&changed=1")
 		var/text = "<br><font size=3><b>the wizards/witches were:</b></font>"
 
 		for(var/datum/mind/wizard in wizards)
@@ -222,9 +224,11 @@
 			if(wizard.current && wizard.current.stat!=2 && wizardwin)
 				text += "<br><font color='green'><B>The wizard was successful!</B></font>"
 				feedback_add_details("wizard_success","SUCCESS")
+				log_yogstat_data("gamemode.php?gamemode=wizard&value=antagwin&action=add&changed=1")
 			else
 				text += "<br><font color='red'><B>The wizard has failed!</B></font>"
 				feedback_add_details("wizard_success","FAIL")
+				log_yogstat_data("gamemode.php?gamemode=traitor&value=crewwin&action=add&changed=1")
 			if(wizard.spell_list.len>0)
 				text += "<br><B>[wizard.name] used the following spells: </B>"
 				var/i = 1

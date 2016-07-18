@@ -145,6 +145,8 @@
 		if(!I.action)
 			if(istype(I, /obj/item/organ/internal))
 				I.action = new/datum/action/organ_action
+			else if(I.action_button_is_hands_free == 2)
+				I.action = new/datum/action/item_action/unrestricted
 			else if(I.action_button_is_hands_free)
 				I.action = new/datum/action/item_action/hands_free
 			else
@@ -192,7 +194,7 @@
 
 		if(druggy)
 			overlay_fullscreen("high", /obj/screen/fullscreen/high)
-			throw_alert("high", /obj/screen/alert/high)
+			throw_alert("high")
 		else
 			clear_fullscreen("high")
 			clear_alert("high")
@@ -248,10 +250,9 @@
 	var/button_number = 0
 	for(var/datum/action/A in actions)
 		button_number++
-		if(A.button == null)
-			var/obj/screen/movable/action_button/N = new(hud_used)
-			N.owner = A
-			A.button = N
+		var/obj/screen/movable/action_button/N = new(hud_used)
+		N.owner = A
+		A.button = N
 
 		var/obj/screen/movable/action_button/B = A.button
 

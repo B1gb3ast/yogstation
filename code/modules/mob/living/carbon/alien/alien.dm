@@ -10,10 +10,10 @@
 	dna = null
 	faction = list("alien")
 	ventcrawler = 2
-	languages = ALIEN
+	languages_understood = ALIEN
+	languages_spoken = ALIEN
 	verb_say = "hisses"
 	type_of_meat = /obj/item/weapon/reagent_containers/food/snacks/meat/slab/xeno
-	var/nightvision = 1
 
 	var/obj/item/weapon/card/id/wear_id = null // Fix for station bounced radios -- Skie
 	var/has_fine_manipulation = 0

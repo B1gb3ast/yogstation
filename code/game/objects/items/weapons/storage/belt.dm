@@ -19,11 +19,11 @@
 	icon_state = "utilitybelt"
 	item_state = "utility"
 	can_hold = list(
-		/obj/item/weapon/crowbar,
-		/obj/item/weapon/screwdriver,
-		/obj/item/weapon/weldingtool,
-		/obj/item/weapon/wirecutters,
-		/obj/item/weapon/wrench,
+		/obj/item/weapon/tool/crowbar,
+		/obj/item/weapon/tool/screwdriver,
+		/obj/item/weapon/tool/weldingtool,
+		/obj/item/weapon/tool/wirecutters,
+		/obj/item/weapon/tool/wrench,
 		/obj/item/device/multitool,
 		/obj/item/device/flashlight,
 		/obj/item/stack/cable_coil,
@@ -34,22 +34,22 @@
 
 /obj/item/weapon/storage/belt/utility/full/New()
 	..()
-	new /obj/item/weapon/screwdriver(src)
-	new /obj/item/weapon/wrench(src)
-	new /obj/item/weapon/weldingtool(src)
-	new /obj/item/weapon/crowbar(src)
-	new /obj/item/weapon/wirecutters(src)
+	new /obj/item/weapon/tool/screwdriver(src)
+	new /obj/item/weapon/tool/wrench(src)
+	new /obj/item/weapon/tool/weldingtool(src)
+	new /obj/item/weapon/tool/crowbar(src)
+	new /obj/item/weapon/tool/wirecutters(src)
 	new /obj/item/device/multitool(src)
 	new /obj/item/stack/cable_coil(src,30,pick("red","yellow","orange"))
 
 
 /obj/item/weapon/storage/belt/utility/atmostech/New()
 	..()
-	new /obj/item/weapon/screwdriver(src)
-	new /obj/item/weapon/wrench(src)
-	new /obj/item/weapon/weldingtool(src)
-	new /obj/item/weapon/crowbar(src)
-	new /obj/item/weapon/wirecutters(src)
+	new /obj/item/weapon/tool/screwdriver(src)
+	new /obj/item/weapon/tool/wrench(src)
+	new /obj/item/weapon/tool/weldingtool(src)
+	new /obj/item/weapon/tool/crowbar(src)
+	new /obj/item/weapon/tool/wirecutters(src)
 	new /obj/item/device/t_scanner(src)
 	new /obj/item/weapon/extinguisher/mini(src)
 
@@ -165,16 +165,18 @@
 		)
 	var/malfunctioning = 0
 
-/obj/item/weapon/storage/belt/military/chameleon/attackby(obj/item/clothing/under/U, mob/user, params)
+/obj/item/weapon/storage/belt/military/chameleon/attackby(obj/item/U, mob/user, params)
 	..()
 	if(istype(U, /obj/item/weapon/storage/belt/military/chameleon))
 		user << "<span class='notice'>Nothing happens.</span>"
 		return
 	if(istype(U, /obj/item/weapon/storage/belt))
-		if(src.clothing_choices.Find(U))
-			user << "<span class='notice'>Pattern is already recognised by the belt.</span>"
-			return
-		src.clothing_choices += U
+		for(var/choice in clothing_choices)
+			var/obj/item/weapon/storage/belt/C = choice
+			if(U.type == C.type)
+				user << "<span class='notice'>Pattern is already recognised by the belt.</span>"
+				return
+		src.clothing_choices += new U.type()
 		user << "<span class='notice'>Pattern absorbed by the belt.</span>"
 
 
@@ -203,12 +205,9 @@
 /obj/item/weapon/storage/belt/military/chameleon/attack_self()
 	set src in usr
 
-	var/obj/item/clothing/under/A
+	var/obj/item/weapon/storage/belt/A
 	A = input("Select Colour to change it to", "BOOYEA", A) in clothing_choices
-	if(!A)
-		return
-
-	if(usr.stat != CONSCIOUS)
+	if(!A || loc != usr || usr.stat)
 		return
 
 	if(malfunctioning)
@@ -276,6 +275,69 @@
 		/obj/item/ammo_casing/shotgun
 		)
 
+/obj/item/weapon/storage/belt/bandolier/security
+	name = "security bandolier"
+	desc = "A light-weight bandolier authorized towards security for"
+	icon_state = "sec_bandolier"
+	item_state = "sec_bandolier"
+	storage_slots = 13
+
+/obj/item/weapon/storage/belt/bandolier/security/rubber/New()
+	..()
+	name = "standard edition [name]"
+	desc = "[desc] non-lethal takedowns. Contains slugs filled with densly-packed rubber balls"
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+	new /obj/item/ammo_casing/shotgun/rubbershot(src)
+
+
+
+/obj/item/weapon/storage/belt/bandolier/security/buckshot/New()
+	..()
+	name = "crowd-control edition [name]"
+	desc = "[desc] crowd-control. Contains slugs that contain pellets that will spread upon fire"
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+	new /obj/item/ammo_casing/shotgun/buckshot(src)
+
+/obj/item/weapon/storage/belt/bandolier/security/slug/New()
+	..()
+	name = "lethal edition [name]"
+	desc = "[desc] lethal situations. Contains slugs that deal a great amount of brute damage."
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+	new /obj/item/ammo_casing/shotgun(src)
+
 /obj/item/weapon/storage/belt/holster
 	name = "shoulder holster"
 	desc = "A holster to conceal a carried handgun and ammo. WARNING: Badasses only."
@@ -298,6 +360,10 @@
 	storage_slots = 3
 	max_w_class = 2
 
+/obj/item/weapon/storage/belt/fannypack/suicide_act(mob/user)
+	user.visible_message("<span class='suicide'>[user] is putting on [src]! It looks like \he's trying to commit social suicide.</span>")
+	return(OXYLOSS);
+
 /obj/item/weapon/storage/belt/fannypack/holding
 	name = "fannypack of holding"
 	desc = "As dorky as this device looks, it's incredibly useful."
@@ -305,7 +371,7 @@
 	item_state = "fannypack_white"
 	origin_tech = "bluespace=4"
 	storage_slots = 28
-	max_w_class = 5
+	max_w_class = 3
 	max_combined_w_class = 35
 
 	can_be_inserted(obj/item/I)

@@ -134,11 +134,12 @@
 
 
 
+/turf/proc/process_cell()
+	SSair.remove_from_active(src)
 
-
-
-/turf/simulated/proc/process_cell()
-
+/turf/simulated/process_cell()
+	if (blocks_air || !air)
+		SSair.remove_from_active(src)
 	if(archived_cycle < SSair.times_fired) //archive self if not already done
 		archive()
 	current_cycle = SSair.times_fired
