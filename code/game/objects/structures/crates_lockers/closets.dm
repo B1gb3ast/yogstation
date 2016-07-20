@@ -10,6 +10,7 @@
 	var/opened = 0
 	var/welded = 0
 	var/locked = 0
+	var/alert_locked = SEC_LEVEL_GREEN
 	var/broken = 0
 	var/large = 1
 	var/wall_mounted = 0 //never solid (You can always pass over it)
@@ -207,12 +208,12 @@
 			return
 		if(istype(W,/obj/item/tk_grab))
 			return 0
-		if(istype(W, /obj/item/weapon/weldingtool))
-			var/obj/item/weapon/weldingtool/WT = W
+		if(istype(W, /obj/item/weapon/tool/weldingtool))
+			var/obj/item/weapon/tool/weldingtool/WT = W
 			if(WT.remove_fuel(0,user))
 				user << "<span class='notice'>You begin cutting \the [src] apart...</span>"
 				playsound(loc, 'sound/items/Welder.ogg', 40, 1)
-				if(do_after(user,40,5,1, target = src))
+				if(do_after(user, 40 * WT.speed_coefficient, 5, 1, target = src))
 					if( !opened || !istype(src, /obj/structure/closet) || !user || !WT || !WT.isOn() || !user.loc )
 						return
 					playsound(loc, 'sound/items/Welder2.ogg', 50, 1)
@@ -227,12 +228,12 @@
 	else
 		if(istype(W, /obj/item/stack/packageWrap))
 			return
-		if(istype(W, /obj/item/weapon/weldingtool))
-			var/obj/item/weapon/weldingtool/WT = W
+		if(istype(W, /obj/item/weapon/tool/weldingtool))
+			var/obj/item/weapon/tool/weldingtool/WT = W
 			if(WT.remove_fuel(0,user))
 				user << "<span class='notice'>You begin [welded ? "unwelding":"welding"] \the [src]...</span>"
 				playsound(loc, 'sound/items/Welder2.ogg', 40, 1)
-				if(do_after(user,40,5,1, target = src))
+				if(do_after(user, 40 * WT.speed_coefficient, 5, 1, target = src))
 					if(opened || !istype(src, /obj/structure/closet) || !user || !WT || !WT.isOn() || !user.loc )
 						return
 					playsound(loc, 'sound/items/welder.ogg', 50, 1)
@@ -276,7 +277,7 @@
 	return 1
 
 /obj/structure/closet/relaymove(mob/user)
-	if(user.stat || !isturf(loc))
+	if(user.stat || !(isturf(loc) || istype(loc, /obj/structure/bodycontainer/)) )
 		return
 	if(!open())
 		user << "<span class='notice'>It won't budge!</span>"
@@ -383,7 +384,7 @@
 
 /obj/structure/closet/proc/togglelock(mob/user)
 	if(secure)
-		if(allowed(user))
+		if(allowed(user) && (!locked || (locked && alert_locked <= security_level)))
 			locked = !locked
 			add_fingerprint(user)
 			for(var/mob/O in viewers(user, 3))
@@ -391,7 +392,7 @@
 					O << "<span class='notice'>[user] has [locked ? null : "un"]locked the locker.</span>"
 			update_icon()
 		else
-			user << "<span class='notice'>Access Denied</span>"
+			user << "<span class='notice'>Access Denied [alert_locked > security_level ? "- The alert level is not severe enough" : ""]</span>"
 	else
 		return
 

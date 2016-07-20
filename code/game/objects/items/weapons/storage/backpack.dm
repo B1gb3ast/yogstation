@@ -33,10 +33,10 @@
 /obj/item/weapon/storage/backpack/holding
 	name = "bag of holding"
 	desc = "A backpack that opens into a localized pocket of Blue Space."
-	origin_tech = "bluespace=4"
+	origin_tech = "bluespace=5"
 	icon_state = "holdingpack"
-	max_w_class = 5
-	max_combined_w_class = 35
+	max_w_class = 6
+	max_combined_w_class = 150 //OH YES
 	burn_state = -1 // NotBurnable
 	var/pshoom = 'sound/items/PSHOOM.ogg'
 	var/alt_sound = 'sound/items/PSHOOM_2.ogg'
@@ -287,7 +287,7 @@
 /obj/item/weapon/storage/backpack/satchel_flat/New()
 	..()
 	new /obj/item/stack/tile/plasteel(src)
-	new /obj/item/weapon/crowbar(src)
+	new /obj/item/weapon/tool/crowbar(src)
 
 /obj/item/weapon/storage/backpack/dufflebag
 	name = "dufflebag"
@@ -408,3 +408,26 @@
 	icon_state = "duffle-clown"
 	item_state = "duffle-clown"
 
+/obj/item/weapon/storage/backpack/minedrone
+	name = "backpack"
+	desc = "It's a tough backpack for the daily grind of minedrone life.."
+	icon_state = "engiepack"
+	item_state = "engiepack"
+	max_w_class = 4
+	max_combined_w_class = 28
+	burn_state = -1
+	flags = NODROP
+
+/obj/item/weapon/storage/backpack/minedrone/New()
+	..()
+
+	contents = list()
+	new /obj/item/weapon/storage/bag/ore(src)
+	new /obj/item/weapon/shovel/spade(src)
+	new /obj/item/weapon/pickaxe(src)
+	new /obj/item/weapon/tool/screwdriver(src)
+	var/obj/item/weapon/card/id/point_card = new /obj/item/weapon/card/id(src)
+	var/datum/job/mining/M = new /datum/job/mining
+	point_card.access = M.get_access()
+	point_card.name = "Mining Points Card"
+	return

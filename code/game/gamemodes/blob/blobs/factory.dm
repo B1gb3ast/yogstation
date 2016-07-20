@@ -2,8 +2,11 @@
 	name = "factory blob"
 	icon = 'icons/mob/blob.dmi'
 	icon_state = "blob_factory"
-	health = 100
-	fire_resist = 2
+	desc = "A thick spire of pulsating tendrils."
+	health = 90
+	maxhealth = 90
+	health_regen = 2
+	fire_resist = 0.75
 	var/list/spores = list()
 	var/max_spores = 3
 	var/spore_delay = 0

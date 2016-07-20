@@ -5,6 +5,7 @@
 	var/name				//name of the subsystem
 	var/priority = 0		//priority affects order of initialization. Higher priorities are initialized first, lower priorities later. Can be decimal and negative values.
 	var/wait = 20			//time to wait (in deciseconds) between each call to fire(). Must be a positive integer.
+	var/display = 100		//display affects order the subsystem is displayed in the MC tab
 
 	//Dynamic Wait - A system for scaling a subsystem's fire rate based on lag
 	//The algorithm is: (cost-dwait_buffer+AvgCostOfAllOtherSSPerSecond)*dwait_delta
@@ -23,7 +24,10 @@
 	var/next_fire = 0		//scheduled world.time for next fire()
 	var/cost = 0			//average time to execute
 	var/times_fired = 0		//number of times we have called fire()
-
+#if DM_VERSION >= 510
+	var/tick_usage = 0		//average tick usage
+#endif
+	var/paused = 0
 	var/last_cost = 0
 
 
@@ -38,9 +42,15 @@
 //fire() seems more suitable. This is the procedure that gets called every 'wait' deciseconds.
 //fire(), and the procs it calls, SHOULD NOT HAVE ANY SLEEP OPERATIONS in them!
 //YE BE WARNED!
-/datum/subsystem/proc/fire()
+/datum/subsystem/proc/fire(resumed = 0)
+	set waitfor = 0
 	can_fire = 0
 
+/datum/subsystem/proc/pause()
+	. = 1
+	if (!dynamic_wait)
+		master_controller.priority_queue += src
+	paused = 1
 //used to initialize the subsystem AFTER the map has loaded
 /datum/subsystem/proc/Initialize(start_timeofday, zlevel)
 	var/time = (world.timeofday - start_timeofday) / 10

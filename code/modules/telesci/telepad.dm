@@ -9,6 +9,7 @@
 	idle_power_usage = 200
 	active_power_usage = 5000
 	var/efficiency
+	var/beacon
 
 /obj/machinery/telepad/New()
 	..()
@@ -20,6 +21,11 @@
 	component_parts += new /obj/item/weapon/stock_parts/console_screen(null)
 	component_parts += new /obj/item/stack/cable_coil(null, 1)
 	RefreshParts()
+	beacon = new /obj/item/device/tsbeacon/advanced/telepad(src)
+
+/obj/machinery/telepad/Destroy()
+	qdel(beacon)
+	..()
 
 /obj/machinery/telepad/RefreshParts()
 	var/E
@@ -55,7 +61,7 @@
 	active_power_usage = 500
 	var/stage = 0
 /obj/machinery/telepad_cargo/attackby(obj/item/weapon/W, mob/user, params)
-	if(istype(W, /obj/item/weapon/wrench))
+	if(istype(W, /obj/item/weapon/tool/wrench))
 		anchored = 0
 		playsound(src, 'sound/items/Ratchet.ogg', 50, 1)
 		if(anchored)
@@ -64,7 +70,7 @@
 		else if(!anchored)
 			anchored = 1
 			user << "<span class='caution'>\The [src] is now secured.</span>"
-	if(istype(W, /obj/item/weapon/screwdriver))
+	if(istype(W, /obj/item/weapon/tool/screwdriver))
 		if(stage == 0)
 			playsound(src, 'sound/items/Screwdriver.ogg', 50, 1)
 			user << "<span class='caution'>You unscrew the telepad's tracking beacon.</span>"
@@ -73,7 +79,7 @@
 			playsound(src, 'sound/items/Screwdriver.ogg', 50, 1)
 			user << "<span class='caution'>You screw in the telepad's tracking beacon.</span>"
 			stage = 0
-	if(istype(W, /obj/item/weapon/weldingtool) && stage == 1)
+	if(istype(W, /obj/item/weapon/tool/weldingtool) && stage == 1)
 		playsound(src, 'sound/items/Welder.ogg', 50, 1)
 		user << "<span class='caution'>You disassemble the telepad.</span>"
 		new /obj/item/stack/sheet/metal(get_turf(src))

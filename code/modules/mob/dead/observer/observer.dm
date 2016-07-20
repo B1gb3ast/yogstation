@@ -10,7 +10,9 @@ var/list/image/ghost_darkness_images = list() //this is a list of images for thi
 	canmove = 0
 	anchored = 1	//  don't get pushed around
 	invisibility = INVISIBILITY_OBSERVER
-	languages = ALL
+	appearance_flags = KEEP_TOGETHER // So they don't look weird
+	languages_understood = ALL
+	languages_spoken = ALL
 	var/can_reenter_corpse
 	var/datum/hud/living/carbon/hud = null // hud
 	var/bootime = 0
@@ -23,6 +25,7 @@ var/list/image/ghost_darkness_images = list() //this is a list of images for thi
 	var/ghostvision = 1 //is the ghost able to see things humans can't?
 	var/seedarkness = 1
 	var/ninjahud = 0
+	//var/ghost_orbit = GHOST_ORBIT_CIRCLE
 
 /mob/dead/observer/New(mob/body)
 	sight |= SEE_TURFS | SEE_MOBS | SEE_OBJS | SEE_SELF
@@ -32,6 +35,7 @@ var/list/image/ghost_darkness_images = list() //this is a list of images for thi
 	stat = DEAD
 
 	ghostimage = image(src.icon,src,src.icon_state)
+	ghostimage.overlays = overlays
 	ghost_darkness_images |= ghostimage
 	updateallghostimages()
 	var/turf/T
@@ -109,6 +113,8 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 
 /mob/dead/observer/Move(NewLoc, direct)
+	dir = direct
+	ghostimage.dir = direct
 	if(NewLoc)
 		loc = NewLoc
 		for(var/obj/effect/step_trigger/S in NewLoc)
@@ -124,7 +130,6 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		x++
 	else if((direct & WEST) && x > 1)
 		x--
-
 	for(var/obj/effect/step_trigger/S in locate(x, y, z))	//<-- this is dumb
 		S.Crossed(src)
 
@@ -137,13 +142,6 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		stat(null, "Station Time: [worldtime2text()]")
 		if(ticker)
 			if(ticker.mode)
-				//world << "DEBUG: ticker not null"
-				if(ticker.mode.name == "AI malfunction")
-					var/datum/game_mode/malfunction/malf = ticker.mode
-					//world << "DEBUG: malf mode ticker test"
-					if(malf.malf_mode_declared && (malf.apcs > 0))
-						stat(null, "Time left: [max(malf.AI_win_timeleft/malf.apcs, 0)]")
-
 				for(var/datum/gang/G in ticker.mode.gangs)
 					if(isnum(G.dom_timer))
 						stat(null, "[G.name] Gang Takeover: [max(G.dom_timer, 0)]")
@@ -217,12 +215,10 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set name = "Follow" // "Haunt"
 	set desc = "Follow and haunt a mob."
 
-	var/list/mobs = getmobs()
-	var/input = input("Please, select a mob!", "Haunt", null, null) as null|anything in mobs
-	var/mob/target = mobs[input]
-	ManualFollow(target)
+	if(istype(usr, /mob/dead/observer)) //Make sure they're an observer!
+		search_mob(src, "FLW")
 
-// This is the ghost's follow verb with an argument
+ // This is the ghost's follow verb with an argument
 /mob/dead/observer/proc/ManualFollow(atom/movable/target)
 	if(target && target != src)
 		if(following && following == target)
@@ -241,7 +237,34 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 				pos = loc
 				sleep(15)
 			if (target == following) following = null
+//This below is ghost orbiting. I commented it out because people were annoyed.
+/*	if (!istype(target))
+		return
 
+	var/icon/I = icon(target.icon,target.icon_state,target.dir)
+
+	var/orbitsize = (I.Width()+I.Height())*0.5
+	orbitsize -= (orbitsize/world.icon_size)*(world.icon_size*0.25)
+
+	if(orbiting != target)
+		src << "<span class='notice'>Now orbiting [target].</span>"
+
+	var/rot_seg
+
+	switch(ghost_orbit)
+		if(GHOST_ORBIT_TRIANGLE)
+			rot_seg = 3
+		if(GHOST_ORBIT_SQUARE)
+			rot_seg = 4
+		if(GHOST_ORBIT_PENTAGON)
+			rot_seg = 5
+		if(GHOST_ORBIT_HEXAGON)
+			rot_seg = 6
+		else //Circular
+			rot_seg = 36 //360/10 bby, smooth enough aproximation of a circle
+
+	orbit(target,orbitsize, FALSE, 20, rot_seg)
+*/
 /mob/dead/observer/proc/toggleninjahud()
 	set category = "Ghost"
 	set name = "Toggle Antag Icons"
@@ -263,25 +286,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set desc = "Teleport to a mob"
 
 	if(istype(usr, /mob/dead/observer)) //Make sure they're an observer!
-
-
-		var/list/dest = list() //List of possible destinations (mobs)
-		var/target = null	   //Chosen target.
-
-		dest += getmobs() //Fill list, prompt user with list
-		target = input("Please, select a player!", "Jump to Mob", null, null) as null|anything in dest
-
-		if (!target)//Make sure we actually have a target
-			return
-		else
-			var/mob/M = dest[target] //Destination mob
-			var/mob/A = src			 //Source mob
-			var/turf/T = get_turf(M) //Turf of the destination mob
-
-			if(T && isturf(T))	//Make sure the turf exists, then move the source to that destination.
-				A.loc = T
-			else
-				A << "This mob is not located in the game world."
+		search_mob(src, "JMP")
 
 /mob/dead/observer/verb/boo()
 	set category = "Ghost"
@@ -446,7 +451,23 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 						if(null)
 							//Nothing
 						else//If we don't know what role they have but they have one.
-							client.images += image(tempHud,target,"hudunknown1")
+							var/is_gang = 0
+							if(ticker.mode.gangs)
+								for(var/datum/gang/gang in ticker.mode.gangs)
+									if(gang.gangsters.Find(target.mind))
+										var/image/hud = image(tempHud,target,"gang_color_overlay")
+										hud.color += gang.color_hex
+										client.images += hud
+										client.images += image(tempHud,target,"gangster")
+										is_gang = 1
+									if(gang.bosses.Find(target.mind))
+										var/image/hud = image(tempHud,target,"gang_color_overlay")
+										hud.color += gang.color_hex
+										client.images += hud
+										client.images += image(tempHud,target,"gang_boss")
+										is_gang = 1
+							if(!is_gang)
+								client.images += image(tempHud,target,"hudunknown1")
 
 				else if(issilicon(target))//If the silicon mob has no law datum, no inherent laws, or a law zero, add them to the hud.
 					var/mob/living/silicon/silicon_target = target

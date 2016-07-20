@@ -85,8 +85,11 @@
 	layer = 4
 
 /obj/structure/plasticflaps/CanPass(atom/movable/A, turf/T)
-	if(istype(A) && A.checkpass(PASSGLASS))
-		return prob(60)
+	if(istype(A))
+		if(A.checkpass(PASSDOOR))
+			return 1
+		else if(A.checkpass(PASSGLASS))
+			return prob(60)
 
 	var/obj/structure/stool/bed/B = A
 	if (istype(A, /obj/structure/stool/bed) && (B.buckled_mob || B.density))//if it's a bed/chair and is dense or someone is buckled, it will not pass
@@ -126,39 +129,6 @@
 		if(istype(T, /turf/simulated/floor))
 			T.blocks_air = 0
 	..()
-
-/obj/machinery/computer/supplycomp
-	name = "supply shuttle console"
-	desc = "Used to order supplies."
-	icon_screen = "supply"
-	req_access = list(access_cargo)
-	circuit = /obj/item/weapon/circuitboard/supplycomp
-	verb_say = "flashes"
-	verb_ask = "flashes"
-	verb_exclaim = "flashes"
-	var/temp = null
-	var/reqtime = 0 //Cooldown for requisitions - Quarxink
-	var/hacked = 0
-	var/can_order_contraband = 0
-	var/last_viewed_group = "categories"
-
-/obj/machinery/computer/supplycomp/New()
-	..()
-
-	var/obj/item/weapon/circuitboard/supplycomp/board = circuit
-	can_order_contraband = board.contraband_enabled
-
-/obj/machinery/computer/ordercomp
-	name = "supply ordering console"
-	desc = "Used to order supplies from cargo staff."
-	icon_screen = "request"
-	circuit = /obj/item/weapon/circuitboard/ordercomp
-	verb_say = "flashes"
-	verb_ask = "flashes"
-	verb_exclaim = "flashes"
-	var/temp = null
-	var/reqtime = 0 //Cooldown for requisitions - Quarxink
-	var/last_viewed_group = "categories"
 
 /obj/machinery/computer/shuttle/white_ship
 	name = "White Ship Console"

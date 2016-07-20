@@ -140,6 +140,20 @@
 		ghost_hud()
 	else if(isovermind(mymob))
 		blob_hud()
+	else if(isminedrone(mymob))
+		var/ui_style
+		if(mymob.client && mymob.client.prefs)
+			ui_style = ui_style2icon_carbon(mymob.client.prefs.UI_style_carbon)
+		else
+			ui_style = DEFAULT_CARBON_UI
+		mine_drone_hud(ui_style)
+	else if(isSSD(mymob))
+		var/ui_style
+		if(mymob.client && mymob.client.prefs)
+			ui_style = ui_style2icon_carbon(mymob.client.prefs.UI_style_carbon)
+		else
+			ui_style = DEFAULT_CARBON_UI
+		syndicate_scout_drone(ui_style)
 	else if(isdrone(mymob))
 		var/ui_style
 		if(mymob.client && mymob.client.prefs)
@@ -149,6 +163,11 @@
 		drone_hud(ui_style)
 	else if(isswarmer(mymob))
 		swarmer_hud()
+	else if(get_tactical_harness(mymob))
+		var/obj/item/weapon/storage/tactical_harness/H = get_tactical_harness(mymob)
+		H.tactical_harness_hud(src)
+	else
+		mymob.client.screen = list(mymob.client.void)
 
 //Version denotes which style should be displayed. blank or 0 means "next version"
 /datum/hud/proc/show_hud(version = 0)

@@ -70,7 +70,7 @@ var/global/list/bibleitemstates =	list("bible", "koran", "scrapbook", "bible", "
 /obj/item/weapon/storage/book/bible/proc/setupbiblespecifics(obj/item/weapon/storage/book/bible/B, mob/living/carbon/human/H)
 	switch(B.icon_state)
 		if("honk1","honk2")
-			new /obj/item/weapon/bikehorn(B)
+			new /obj/item/device/assembly/bikehorn(B)
 			H.dna.add_mutation(CLOWNMUT)
 			H.equip_to_slot_or_del(new /obj/item/clothing/mask/gas/clown_hat(H), slot_wear_mask)
 
@@ -96,7 +96,7 @@ var/global/list/bibleitemstates =	list("bible", "koran", "scrapbook", "bible", "
 						T.dir = 10
 
 /obj/item/weapon/storage/book/bible/Topic(href, href_list)
-	if(href_list["seticon"])
+	if(href_list["seticon"] && ticker && !ticker.Bible_icon_state)
 		var/iconi = text2num(href_list["seticon"])
 
 		var/biblename = biblenames[iconi]

@@ -103,14 +103,16 @@
 	return
 
 /obj/machinery/computer/attackby(obj/I, mob/user, params)
-	if(istype(I, /obj/item/weapon/screwdriver) && circuit)
+	if(istype(I, /obj/item/weapon/tool/screwdriver) && circuit)
 		playsound(src.loc, 'sound/items/Screwdriver.ogg', 50, 1)
 		user << "<span class='notice'> You start to disconnect the monitor...</span>"
-		if(do_after(user, 20, target = src))
+		var/obj/item/weapon/tool/screwdriver/sd = I
+		if(do_after(user, 20 * sd.speed_coefficient, target = src))
 			var/obj/structure/computerframe/A = new /obj/structure/computerframe( src.loc )
 			A.circuit = circuit
 			A.anchored = 1
 			circuit = null
+			erase_data()
 			for (var/obj/C in src)
 				C.loc = src.loc
 			if (src.stat & BROKEN)
@@ -165,3 +167,6 @@
 	user.visible_message("<span class='danger'>[user.name] smashes against the [src.name] with its claws.</span>",\
 	"<span class='danger'>You smash against the [src.name] with your claws.</span>",\
 	"<span class='italics'>You hear a clicking sound.</span>")
+
+/obj/machinery/computer/proc/erase_data()
+	return 0

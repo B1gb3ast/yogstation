@@ -267,7 +267,15 @@
 
 /obj/item/weapon/storage/box/syndie_kit/nuke/New()
 	..()
-	new /obj/item/weapon/screwdriver/nuke(src)
+	new /obj/item/weapon/tool/screwdriver/nuke(src)
 	new /obj/item/nuke_core_container(src)
 	new /obj/item/weapon/paper/nuke_instructions(src)
 	new /obj/item/weapon/paper/nuke_plans(src)
+
+/obj/item/weapon/storage/box/syndie_kit/scoutdrones
+	name = "box"
+
+/obj/item/weapon/storage/box/syndie_kit/scoutdrones/New()
+	..()
+	var/turf/T = usr.loc
+	new /mob/living/simple_animal/drone/syndiscout(T)

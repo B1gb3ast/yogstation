@@ -20,6 +20,7 @@
 	item_state	= "camera_bug"
 	throw_speed	= 4
 	throw_range	= 20
+	origin_tech = "syndicate=3;engineering=1"
 
 	var/obj/machinery/camera/current = null
 	var/obj/item/expansion = null
@@ -310,7 +311,7 @@
 	src.updateSelfDialog()
 
 /obj/item/device/camera_bug/attackby(obj/item/W,mob/living/user, params)
-	if(istype(W,/obj/item/weapon/screwdriver) && expansion)
+	if(istype(W,/obj/item/weapon/tool/screwdriver) && expansion)
 		expansion.loc = get_turf(loc)
 		user << "<span class='notice'>You unscrew [expansion].</span>"
 		user.put_in_inactive_hand(expansion)

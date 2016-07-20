@@ -11,11 +11,12 @@
 	config_tag = "traitor"
 	antag_flag = BE_TRAITOR
 	restricted_jobs = list("Cyborg")//They are part of the AI if he is traitor so are they, they use to get double chances
-	protected_jobs = list("Security Officer", "Warden", "Detective", "Head of Security", "Captain", "Recovery Agent")//AI", Currently out of the list as malf does not work for shit
+	protected_jobs = list("Security Officer", "Warden", "Detective", "Head of Security", "Captain")
 	required_players = 0
 	required_enemies = 1
 	recommended_enemies = 4
 	reroll_friendly = 1
+	yogstat_name = "traitor"
 
 	var/traitors_possible = 4 //hard limit on traitors if scaling is turned off
 	var/num_modifier = 0 // Used for gamemodes, that are a child of traitor, that need more than the usual.
@@ -44,7 +45,7 @@
 	for(var/j = 0, j < num_traitors, j++)
 		if (!antag_candidates.len)
 			break
-		var/datum/mind/traitor = pick(antag_candidates)
+		var/datum/mind/traitor = pick_candidate()
 		traitors += traitor
 		traitor.special_role = traitor_name
 		traitor.restricted_roles = restricted_jobs
@@ -74,7 +75,7 @@
 	if(ticker.mode.traitors.len >= traitorcap) //Upper cap for number of latejoin antagonists
 		return
 	if(ticker.mode.traitors.len <= (traitorcap - 2) || prob(100 / (config.traitor_scaling_coeff * 2)))
-		if(character.client.prefs.be_special & BE_TRAITOR)
+		if(character.client.prefs.hasSpecialRole(BE_TRAITOR))
 			var/list/bans = jobban_list_for_mob(character.client)
 			if(!jobban_job_in_list(bans, "traitor") && !jobban_job_in_list(bans, "Syndicate"))
 				if(age_check(character.client))
@@ -212,9 +213,13 @@
 	killer.set_syndie_radio()
 	killer << "Your radio has been upgraded! Use :t to speak on an encrypted channel with Syndicate Agents!"
 
+	killer.verbs += /mob/living/silicon/ai/proc/choose_modules
+	killer.malf_picker = new /datum/module_picker
+
 
 /datum/game_mode/proc/auto_declare_completion_traitor()
 	if(traitors.len)
+		log_yogstat_data("gamemode.php?gamemode=traitor&value=rounds&action=add&changed=1")
 		var/text = "<br><font size=3><b>The [traitor_name]s were:</b></font>"
 		for(var/datum/mind/traitor in traitors)
 			var/traitorwin = 1
@@ -260,9 +265,13 @@
 			if(traitorwin)
 				text += "<br><font color='green'><B>The [special_role_text] was successful!</B></font>"
 				feedback_add_details("traitor_success","SUCCESS")
+				if(name != "double agents") //Since theres not really a real winner here we wont contaminate normal traitor statistics
+					log_yogstat_data("gamemode.php?gamemode=traitor&value=antagwin&action=add&changed=1")
 			else
 				text += "<br><font color='red'><B>The [special_role_text] has failed!</B></font>"
 				feedback_add_details("traitor_success","FAIL")
+				if(name != "double agents")
+					log_yogstat_data("gamemode.php?gamemode=traitor&value=crewwin&action=add&changed=1")
 
 			text += "<br>"
 

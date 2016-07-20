@@ -4,6 +4,7 @@
 var/list/blobs = list()
 var/list/blob_cores = list()
 var/list/blob_nodes = list()
+var/list/blob_overmind_list = list()         //blob overmind list so we can keep them alive until all cores are dead.
 
 
 /datum/game_mode/blob
@@ -25,9 +26,10 @@ var/list/blob_nodes = list()
 	var/players_per_core = 30
 	var/blob_point_rate = 3
 
-	var/blobwincount = 350
+	var/blobwincount = 600
 
 	var/list/infected_crew = list()
+	yogstat_name = "blob"
 
 /datum/game_mode/blob/pre_setup()
 	cores_to_spawn = max(round(num_players()/players_per_core, 1), 1)
@@ -37,7 +39,7 @@ var/list/blob_nodes = list()
 	for(var/j = 0, j < cores_to_spawn, j++)
 		if (!antag_candidates.len)
 			break
-		var/datum/mind/blob = pick(antag_candidates)
+		var/datum/mind/blob = pick_candidate()
 		infected_crew += blob
 		blob.special_role = "Blob"
 		blob.restricted_roles = restricted_jobs
@@ -53,7 +55,7 @@ var/list/blob_nodes = list()
 /datum/game_mode/blob/proc/get_blob_candidates()
 	var/list/candidates = list()
 	for(var/mob/living/carbon/human/player in player_list)
-		if(!player.stat && player.mind && !player.mind.special_role && !jobban_check_mob(player, "Syndicate") && (player.client.prefs.be_special & BE_BLOB))
+		if(!player.stat && player.mind && !player.mind.special_role && !jobban_check_mob(player, "Syndicate") && (player.client.prefs.hasSpecialRole(BE_BLOB)))
 			if(age_check(player.client))
 				candidates += player
 	return candidates
@@ -67,8 +69,8 @@ var/list/blob_nodes = list()
 	blobmind.special_role = "Blob"
 	log_game("[blob.key] (ckey) has been selected as a Blob")
 	greet_blob(blobmind)
-	blob << "<span class='userdanger'>You feel very tired and bloated!  You don't have long before you burst!</span>"
-	spawn(600)
+	blob << "<span class='userdanger'>You feel very tired and bloated!  You have a few minutes before you burst!</span>"
+	spawn(3600)//six minutes till burst
 		burst_blob(blobmind)
 	return 1
 

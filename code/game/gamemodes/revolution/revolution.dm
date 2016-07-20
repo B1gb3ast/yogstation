@@ -25,6 +25,8 @@
 	var/max_headrevs = 3
 	var/list/datum/mind/heads_to_kill = list()
 
+	yogstat_name = "revolution"
+
 ///////////////////////////
 //Announces the game type//
 ///////////////////////////
@@ -47,7 +49,7 @@
 	for (var/i=1 to max_headrevs)
 		if (antag_candidates.len==0)
 			break
-		var/datum/mind/lenin = pick(antag_candidates)
+		var/datum/mind/lenin = pick_candidate()
 		antag_candidates -= lenin
 		head_revolutionaries += lenin
 		lenin.restricted_roles = restricted_jobs
@@ -126,7 +128,8 @@
 			mob.dna.remove_mutation(CLOWNMUT)
 
 
-	var/obj/item/device/flash/T = new(mob)
+	var/obj/item/device/flash/rev/T = new(mob)
+	var/obj/item/device/revtool/RT = new(mob)
 	var/obj/item/toy/crayon/spraycan/R = new(mob)
 
 	var/list/slots = list (
@@ -138,13 +141,21 @@
 	)
 	var/where = mob.equip_in_one_of_slots(T, slots)
 	mob.equip_in_one_of_slots(R,slots)
+	var/rtwhere = mob.equip_in_one_of_slots(RT, slots)
 
 	mob.update_icons()
 
 	if (!where)
-		mob << "The Syndicate were unfortunately unable to get you a flash."
+		mob << "Unfortunately, due to budget cuts, the syndicate were unable to get you a conversion tool.  Maybe try prayer?"
 	else
-		mob << "The flash in your [where] will help you to persuade the crew to join your cause."
+		mob << "The syndicate have given you a conversion tool in your [where] to help persuade the crew to join your cause."
+
+	if(!rtwhere)
+		mob << "Unfortunately, due to budget cuts, the syndicate were unable to get you a flash hijacker.  Maybe try prayer?"
+	else
+		mob << "The syndicate have also given you a device which can convert regular flashes to conversion tools."
+
+	if(where && rtwhere)
 		return 1
 
 /////////////////////////////////
@@ -180,7 +191,7 @@
 		var/list/promotable_revs = list()
 		for(var/datum/mind/khrushchev in revolutionaries)
 			if(khrushchev.current && khrushchev.current.client && khrushchev.current.stat != DEAD)
-				if(khrushchev.current.client.prefs.be_special & BE_REV)
+				if(khrushchev.current.client.prefs.hasSpecialRole(BE_REV))
 					promotable_revs += khrushchev
 		if(promotable_revs)
 			var/datum/mind/stalin = pick(promotable_revs)
@@ -190,6 +201,8 @@
 			equip_revolutionary(stalin.current)
 			forge_revolutionary_objectives(stalin)
 			greet_revolutionary(stalin)
+			update_rev_icons_removed(stalin)
+			update_rev_icons_added(stalin)
 
 //////////////////////////////////////
 //Checks if the revs have won or not//
@@ -314,12 +327,15 @@
 //Announces the end of the game with all relavent information stated//
 //////////////////////////////////////////////////////////////////////
 /datum/game_mode/revolution/declare_completion()
+	log_yogstat_data("gamemode.php?gamemode=revolution&value=rounds&action=add&changed=1")
 	if(finished == 1)
 		feedback_set_details("round_end_result","win - heads killed")
 		world << "<span class='danger'><FONT size = 3>The heads of staff were killed or exiled! The revolutionaries win!</FONT></span>"
+		log_yogstat_data("gamemode.php?gamemode=revolution&value=antagwin&action=add&changed=1")
 	else if(finished == 2)
 		feedback_set_details("round_end_result","loss - rev heads killed")
 		world << "<span class='danger'><FONT size = 3>The heads of staff managed to stop the revolution!</FONT></span>"
+		log_yogstat_data("gamemode.php?gamemode=revolution&value=crewwin&action=add&changed=1")
 	..()
 	return 1
 
@@ -410,3 +426,11 @@
 		text += "<br>"
 
 		world << text
+
+/obj/item/device/revtool
+	name = "Electronic Flashbulb Hijacker"
+	desc = "A device designed to reconfigure standard NT issue flashbulbs into something more sinister."
+	icon = 'icons/obj/items.dmi'
+	icon_state = "implanter1"
+	item_state = "syringe_0"
+	origin_tech = "magnets=7;syndicate=1"

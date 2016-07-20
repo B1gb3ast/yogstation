@@ -15,7 +15,7 @@
 	result = /obj/item/weapon/gun
 	reqs = list(/obj/item/weapon/gun = 1)
 	parts = list(/obj/item/weapon/gun = 1)
-	tools = list(/obj/item/weapon/gun/energy/plasmacutter, /obj/item/weapon/screwdriver, /obj/item/weapon/wirecutters)
+	tools = list(/obj/item/weapon/gun/energy/plasmacutter, /obj/item/weapon/tool/screwdriver, /obj/item/weapon/tool/wirecutters)
 	time = 100
 	category = CAT_WEAPON
 
@@ -44,11 +44,80 @@
 	result = /obj/item/weapon/melee/baton/cattleprod
 	reqs = list(/obj/item/weapon/restraints/handcuffs/cable = 1,
 				/obj/item/stack/rods = 1,
-				/obj/item/weapon/wirecutters = 1,
+				/obj/item/weapon/tool/wirecutters = 1,
 				/obj/item/weapon/stock_parts/cell = 1)
 	time = 80
 	parts = list(/obj/item/weapon/stock_parts/cell = 1)
 	category = CAT_WEAPON
+
+/datum/table_recipe/shank
+	name = "Glass Shank"
+	result = /obj/item/weapon/ghetto/glass/shank
+	reqs = list(/obj/item/weapon/shard = 1,
+				/obj/item/ducttape = 1)
+	time = 40
+	category = CAT_WEAPON
+
+/datum/table_recipe/sword
+	name = "Glass Sword"
+	result = /obj/item/weapon/ghetto/glass/sword
+	reqs = list(/obj/item/weapon/shard = 1,
+				/obj/item/ducttape = 1,
+				/obj/item/stack/sheet/glass = 2,
+				/obj/item/stack/rods = 1)
+	time = 100
+	category = CAT_WEAPON
+
+/datum/table_recipe/blacksword
+	name = "Black Glass Sword"
+	result = /obj/item/weapon/ghetto/glass/sword/black
+	reqs = list(/obj/item/weapon/shard = 1,
+				/obj/item/ducttape = 1,
+				/obj/item/stack/sheet/glass = 2,
+				/obj/item/stack/rods = 1,
+				/obj/item/toy/crayon/mime = 1)
+	time = 100
+	category = CAT_WEAPON
+
+/datum/table_recipe/refinedsword
+	name = "Refined Glass Sword"
+	result = /obj/item/weapon/ghetto/glass/sword/refined
+	reqs = list(/obj/item/weapon/ghetto/glass/sword/black = 1,
+				/obj/item/ducttape = 1,
+				/obj/item/stack/sheet/metal = 2,
+				/obj/item/stack/sheet/rglass = 3,
+				/obj/item/stack/rods = 2)
+	time = 100
+	category = CAT_WEAPON
+
+/datum/table_recipe/pneumaticspear
+	name = "Pneumatic Spear"
+	result = /obj/item/weapon/ghetto/airspear
+	reqs = list(/obj/item/weapon/twohanded/spear = 1,
+				/obj/item/device/transfer_valve = 1,
+				/obj/item/ducttape = 2)
+	time = 100
+	category = CAT_WEAPON
+
+/datum/table_recipe/armouredjumpsuit
+	name = "Armoured Jumpsuit"
+	result = /obj/item/clothing/under/armouredjumpsuit
+	reqs = list(/obj/item/clothing/under/color/black = 1,
+				/obj/item/clothing/torncloth = 1,
+				/obj/item/stack/sheet/metal = 1,
+				/obj/item/ducttape = 1)
+	time = 100
+	category = CAT_MISC
+
+/datum/table_recipe/robustcoat
+	name = "Robust Coat"
+	result = /obj/item/clothing/suit/robustcoat
+	reqs = list(/obj/item/clothing/suit/jacket/leather/overcoat = 1,
+				/obj/item/clothing/torncloth = 2,
+				/obj/item/stack/sheet/metal = 2,
+				/obj/item/ducttape = 2)
+	time = 100
+	category = CAT_MISC
 
 /datum/table_recipe/ed209
 	name = "ED209"
@@ -64,7 +133,7 @@
 				/obj/item/weapon/stock_parts/cell = 1,
 				/obj/item/device/assembly/prox_sensor = 1,
 				/obj/item/robot_parts/r_arm = 1)
-	tools = list(/obj/item/weapon/weldingtool, /obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/weldingtool, /obj/item/weapon/tool/screwdriver)
 	time = 120
 	category = CAT_ROBOT
 
@@ -76,7 +145,7 @@
 				/obj/item/weapon/melee/baton = 1,
 				/obj/item/device/assembly/prox_sensor = 1,
 				/obj/item/robot_parts/r_arm = 1)
-	tools = list(/obj/item/weapon/weldingtool)
+	tools = list(/obj/item/weapon/tool/weldingtool)
 	time = 120
 	category = CAT_ROBOT
 
@@ -112,12 +181,12 @@
 /datum/table_recipe/flamethrower
 	name = "Flamethrower"
 	result = /obj/item/weapon/flamethrower
-	reqs = list(/obj/item/weapon/weldingtool = 1,
+	reqs = list(/obj/item/weapon/tool/weldingtool = 1,
 				/obj/item/device/assembly/igniter = 1,
 				/obj/item/stack/rods = 1)
 	parts = list(/obj/item/device/assembly/igniter = 1,
-				/obj/item/weapon/weldingtool = 1)
-	tools = list(/obj/item/weapon/screwdriver)
+				/obj/item/weapon/tool/weldingtool = 1)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 20
 	category = CAT_WEAPON
 
@@ -127,7 +196,7 @@
 	reqs = list(/obj/item/ammo_casing/shotgun/techshell = 1,
 				/obj/item/weapon/rcd_ammo = 1,
 				/obj/item/weapon/stock_parts/manipulator = 2)
-	tools = list(/obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 5
 	category = CAT_AMMO
 
@@ -137,7 +206,7 @@
 	reqs = list(/obj/item/ammo_casing/shotgun/techshell = 1,
 				/obj/item/weapon/stock_parts/capacitor/adv = 2,
 				/obj/item/weapon/stock_parts/micro_laser/ultra = 1)
-	tools = list(/obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 5
 	category = CAT_AMMO
 
@@ -146,7 +215,7 @@
 	result = /obj/item/ammo_casing/shotgun/incendiary/dragonsbreath
 	reqs = list(/obj/item/ammo_casing/shotgun/techshell = 1,
 				/datum/reagent/phosphorus = 5,)
-	tools = list(/obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 5
 	category = CAT_AMMO
 
@@ -157,7 +226,7 @@
 				/datum/reagent/glycerol = 5,
 				/datum/reagent/toxin/acid = 5,
 				/datum/reagent/toxin/acid/fluacid = 5,)
-	tools = list(/obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 5
 	category = CAT_AMMO
 
@@ -167,7 +236,7 @@
 	reqs = list(/obj/item/ammo_casing/shotgun/techshell = 1,
 				/obj/item/weapon/stock_parts/micro_laser/ultra = 1,
 				/obj/item/weapon/stock_parts/subspace/crystal = 1)
-	tools = list(/obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 5
 	category = CAT_AMMO
 
@@ -178,7 +247,7 @@
 				/obj/item/stack/sheet/metal = 1,
 				/obj/item/stack/cable_coil = 1,
 				/datum/reagent/fuel = 10)
-	tools = list(/obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 5
 	category = CAT_AMMO
 
@@ -187,7 +256,7 @@
 	result = /obj/item/ammo_casing/shotgun/improvised/overload
 	reqs = list(/obj/item/ammo_casing/shotgun/improvised = 1,
 				/datum/reagent/blackpowder = 5)
-	tools = list(/obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 5
 	category = CAT_AMMO
 
@@ -197,7 +266,7 @@
 	reqs = list(/obj/item/ammo_casing/shotgun/techshell = 1,
 				/obj/item/weapon/stock_parts/capacitor/adv = 1,
 				/obj/item/weapon/stock_parts/micro_laser/high = 1)
-	tools = list(/obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 5
 	category = CAT_AMMO
 
@@ -208,6 +277,6 @@
 				/obj/item/pipe = 1,
 				/obj/item/weaponcrafting/stock = 1,
 				/obj/item/stack/packageWrap = 5,)
-	tools = list(/obj/item/weapon/screwdriver)
+	tools = list(/obj/item/weapon/tool/screwdriver)
 	time = 200
 	category = CAT_WEAPON

@@ -28,13 +28,16 @@
 
 		if(trash)
 			if(ispath(trash,/obj/item/weapon/grown))
-				var/obj/item/TrashItem = new trash(usr,src.potency)
-				usr.put_in_hands(TrashItem)
+				var/obj/item/TrashItem = new trash(usr.loc,src.potency)
+				if(usr.can_equip(TrashItem, slot_l_hand) || usr.can_equip(TrashItem, slot_r_hand))
+					usr.put_in_hands(TrashItem)
 			else if(ispath(trash,/obj/item))
-				var/obj/item/TrashItem = new trash(usr)
-				usr.put_in_hands(TrashItem)
+				var/obj/item/TrashItem = new trash(usr.loc)
+				if(usr.can_equip(TrashItem, slot_l_hand) || usr.can_equip(TrashItem, slot_r_hand))
+					usr.put_in_hands(TrashItem)
 			else if(istype(trash,/obj/item))
-				usr.put_in_hands(trash)
+				if(usr.can_equip(trash, slot_l_hand) || usr.can_equip(trash, slot_r_hand))
+					usr.put_in_hands(trash)
 		qdel(src)
 	return
 
@@ -111,22 +114,9 @@
 				bitecount++
 				On_Consume()
 
-			if(M.viruses)
-				for(var/datum/disease/D in M.viruses)
-					for(var/datum/reagent/A in reagents.reagent_list)
-						if(A.id in D.cures)
-							if(D.stage <= 1)
-								M << "<span class='warning'>Whatever it was wrong with you, it seems to be gone now.</span>"
-								M.viruses.Remove(D)
-								qdel(D)
-							else
-								M << "<span class='warning'>You feel a little bit better.</span>"
-								D.stage--
-
 			return 1
 
 	return 0
-
 
 /obj/item/weapon/reagent_containers/food/snacks/afterattack(obj/target, mob/user , proximity)
 	return

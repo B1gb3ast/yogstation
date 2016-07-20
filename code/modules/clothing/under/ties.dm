@@ -143,6 +143,7 @@
 /obj/item/clothing/tie/medal/gold/captain
 	name = "medal of captaincy"
 	desc = "A golden medal awarded exclusively to those promoted to the rank of captain. It signifies the codified responsibilities of a captain to Nanotrasen, and their undisputable authority over their crew."
+	high_risk = 1
 
 /obj/item/clothing/tie/medal/gold/heroism
 	name = "medal of exceptional heroism"
@@ -289,3 +290,20 @@
 /obj/item/clothing/tie/petcollar/attack_self(mob/user)
 	tagname = copytext(sanitize(input(user, "Would you like to change the name on the tag?", "Name your new pet", "Spot") as null|text),1,MAX_NAME_LEN)
 	name = "[initial(name)] - [tagname]"
+
+
+	/////////////////////////////////////
+	///DOPE BLING, TUNNEL SNAKES RULE////
+	/////////////////////////////////////
+
+
+/obj/item/clothing/tie/dope_necklace
+	name = "gold necklace"
+	desc = "Damn, it feels good to be a gangster."
+	icon = 'icons/obj/clothing/ties.dmi'
+	icon_state = "bling"
+	item_state = ""	//no inhands
+	item_color = "bling"
+
+
+

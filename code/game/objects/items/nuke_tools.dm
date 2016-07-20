@@ -8,6 +8,7 @@
 	icon_state = "plutonium_core"
 	var/pulse = 0
 	var/cooldown = 0
+	high_risk = 1
 
 /obj/item/nuke_core/process()
 	if(cooldown < world.time - 40)
@@ -35,7 +36,7 @@
 	return 1
 
 //snowflake screwdriver, works as a key to start nuke theft, traitor only
-/obj/item/weapon/screwdriver/nuke
+/obj/item/weapon/tool/screwdriver/nuke
 	name = "screwdriver"
 	desc = "A screwdriver with an ultra thin tip."
 
